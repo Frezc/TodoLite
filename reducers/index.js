@@ -1,3 +1,10 @@
+/** state tree
+ * {
+ *   views: {
+ *     
+ *   }
+ * }
+ */
 
 import { combineReducers } from 'redux'
 import { TEST } from '../constants/actionTypes'
