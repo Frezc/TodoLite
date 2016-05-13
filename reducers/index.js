@@ -1,25 +1,18 @@
 /** state tree
  * {
- *   views: {
- *     
+ *   view: {
+ *     appBarTitle: string, app bar的标题
+ *     navigationViewSelectedIndex: int, navigation view 菜单选择索引
  *   }
  * }
  */
 
 import { combineReducers } from 'redux'
-import { TEST } from '../constants/actionTypes'
 
-function test(state = "Hello", action) {
-  switch (action.type) {
-    case TEST:
-      return action.text
-  }
-
-  return state
-}
+import view from './view'
 
 const rootReducer = combineReducers({
-  test
+  view
 })
 
 export default rootReducer

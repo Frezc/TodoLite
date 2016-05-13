@@ -1,2 +1,3 @@
 
-export const TEST = "TEST"
+export const SET_APPBAR_TITLE = 'SET_APPBAR_TITLE'
+export const SET_NAV_INDEX = 'SET_NAV_INDEX'

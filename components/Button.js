@@ -12,6 +12,7 @@ class Button extends Component {
   static propTypes = {
     text: PropTypes.string.isRequired,
     disabled: PropTypes.bool,
+    type: PropTypes.oneOf(['flat', 'raise']),
     style: PropTypes.object,
     textStyle: PropTypes.object
   }
@@ -19,18 +20,26 @@ class Button extends Component {
   static defaultProps = {
     count: 0,
     disabled: false,
+    type: 'flat',
     style: {},
     textStyle: {}
   }
 
   render() {
-    const { text, style, textStyle, disabled } = this.props;
+    const { text, style, textStyle, disabled, type } = this.props;
 
-    const textStyles = [styles.text, textStyle, {color: disabled ? 'darkgray' : Colors.accent200}]
+    let rootStyles = [styles.root, style]
+    let textStyles = [styles.text, textStyle]
+
+    if (type == 'raise') {
+      rootStyles.push({ backgroundColor: disabled ? 'darkgray' : Colors.accent200 })
+    } else {
+      textStyles.push({color: disabled ? 'darkgray' : Colors.accent200})
+    }
 
     return (
       <TouchableNativeFeedback disabled={disabled}>
-        <View style={[styles.root, style]}>
+        <View style={rootStyles}>
           <Text style={textStyles}>
             {text}
           </Text>
@@ -48,7 +57,8 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   text: {
-    fontWeight: '600'
+    fontWeight: '600',
+    color: 'white'
   }
 })
 

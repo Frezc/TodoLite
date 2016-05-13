@@ -122,6 +122,7 @@ class LoginPage extends Component {
         />
         <ViewPagerAndroid
           style={styles.pages}
+          keyboardDismissMode="on-drag"
           onPageScroll={this.onPageScroll}
           ref={r => this.viewPager = r}
         >

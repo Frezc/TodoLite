@@ -20,6 +20,7 @@ class NavigationView extends Component {
     onProfilePress: PropTypes.func,
     onNavItemPress: PropTypes.func,
     userInfo: PropTypes.shape({
+      id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
       email: PropTypes.string.isRequired,
       avatar: PropTypes.string.isRequired
@@ -28,6 +29,7 @@ class NavigationView extends Component {
 
   static defaultProps = {
     userInfo: {
+      id: -1,
       name: 'Not login',
       email: 'Click to login',
       avatar: ''
@@ -87,14 +89,14 @@ class NavigationView extends Component {
   }
 
   renderSections() {
+    const { userInfo } = this.props
 
     return (
       <View style={styles.sections}>
         {this.renderSection("android-time", 'Schedule', 0)}
-        {this.renderSection('android-done', 'Completed', 1)}
-        {this.renderSection('android-close', 'Abandon or Lay aside', 2)}
-        {this.renderDivider()}
-        {this.renderSection('android-exit', 'Logout', 3)}
+        {this.renderSection('android-calendar', 'History', 1)}
+        {userInfo.id != -1 && this.renderDivider()}
+        {userInfo.id != -1 && this.renderSection('android-exit', 'Logout', -1)}
       </View>
     );
   }
