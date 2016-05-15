@@ -9,13 +9,14 @@ import {
   RefreshControl
 } from 'react-native';
 import { generateRandomStringArray } from '../helpers'
-import Icon from 'react-native-vector-icons/Ionicons'
 import { Colors } from '../assets/Theme'
 import Toolbar from '../components/Toolbar'
+import TodoSection from '../components/TodoSection'
+import router from '../helpers/router'
 
 class SchedulePage extends Component {
 
-  data = generateRandomStringArray(100)
+  data = generateRandomStringArray(100, '一点事情字数补丁字数补丁一点事情字数补丁字数补丁一点事情字数补丁字数补丁')
 
   state = {
     refreshing: false,
@@ -32,31 +33,21 @@ class SchedulePage extends Component {
   renderSection = (rowData, sectionID, rowID, highlightRow) => {
 
     return (
-      <TouchableNativeFeedback>
-        <View style={styles.section}>
-          {
-            //<View style={styles.statusLabel} />
-          }
-          <View style={styles.icon}>
-            <Icon name="android-time" size={40} />
-          </View>
-          <View style={styles.abstract}>
-            <Text style={styles.title}>
-              {rowData}
-            </Text>
-          </View>
-          <View style={styles.rightIcon}>
-            <Icon name="chevron-right" size={16} />
-          </View>
-        </View>
-      </TouchableNativeFeedback>
+      <TodoSection
+        type="work"
+        data={rowData}
+        onPress={() => {
+          this.props.navigator.push(router.todo)
+        }}
+      />
     )
   }
 
+  // need not now
   renderSeparator = (sectionID, rowID, adjacentRowHighlighted) => {
     return (
       // 添加了key属性, 消除一个警告
-      <View style={{ backgroundColor: 'darkgray', height: 1, marginLeft: 68 }} key={rowID} />
+      <View style={{ backgroundColor: 'darkgray', height: 1, marginLeft: 70, opacity: 0.34 }} key={rowID} />
     )
   }
   
@@ -67,7 +58,7 @@ class SchedulePage extends Component {
       // flex: 1 缺少ListView会无法滚动
       <View style={{ flex: 1 }}>
         <Toolbar
-          navIconName="android-menu"
+          navIconName="menu"
           title={'Schedule'}
           onIconClicked={openDrawer}
         />
@@ -82,8 +73,6 @@ class SchedulePage extends Component {
             />
           }
           renderHeader={() => <Text>Header</Text>}
-          renderFooter={() => <Text>Footer</Text>}
-          renderSeparator={this.renderSeparator}
           renderRow={rowData => this.renderSection(rowData)}
         />
       </View>
@@ -92,44 +81,7 @@ class SchedulePage extends Component {
 }
 
 const styles = StyleSheet.create({
-  section: {
-    height: 72,
-    flexDirection: 'row',
-    alignItems: 'stretch',
-    backgroundColor: 'white',
-  },
-  statusLabel: {
-    position: 'absolute',
-    width: 0,
-    height: 0,
-    borderTopWidth: 16,
-    borderTopColor: 'green',
-    borderRightWidth: 16,
-    borderRightColor: 'transparent'
-  },
-  icon: {
-    flex: 0.2,
-    paddingLeft: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-    // backgroundColor: 'gray'
-  },
-  abstract: {
-    flex: 0.8,
-    paddingLeft: 8,
-    alignSelf: 'stretch',
-    // backgroundColor: 'gray'
-  },
-  title: {
-    fontWeight: '600',
-    fontSize: 16
-  },
-  rightIcon: {
-    flex: 0.2,
-    justifyContent: 'center',
-    alignItems: 'center'
-    // backgroundColor: 'orange'
-  }
+
 })
 
 export default SchedulePage

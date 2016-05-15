@@ -48,7 +48,7 @@ class NavigationView extends Component {
           <View
             style={styles.avatar}
           >
-            <Icon name="person" size={32}/>
+            <Icon name="md-person" size={32} style={{ color: 'white' }} />
           </View>
         </TouchableNativeFeedback>
         <Text style={styles.name} numberOfLines={1} onPress={onProfilePress}>{userInfo.name}</Text>
@@ -93,10 +93,10 @@ class NavigationView extends Component {
 
     return (
       <View style={styles.sections}>
-        {this.renderSection("android-time", 'Schedule', 0)}
-        {this.renderSection('android-calendar', 'History', 1)}
+        {this.renderSection("md-time", 'Schedule', 0)}
+        {this.renderSection('md-calendar', 'History', 1)}
         {userInfo.id != -1 && this.renderDivider()}
-        {userInfo.id != -1 && this.renderSection('android-exit', 'Logout', -1)}
+        {userInfo.id != -1 && this.renderSection('md-exit', 'Logout', -1)}
       </View>
     );
   }

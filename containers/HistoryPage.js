@@ -16,7 +16,7 @@ class HistoryPage extends Component {
     return (
       <View>
         <Toolbar
-          navIconName="android-menu"
+          navIconName="menu"
           title={'History'}
           onIconClicked={openDrawer}
         />

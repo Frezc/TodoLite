@@ -75,6 +75,7 @@ class ViewPagerIndicator extends Component {
           {titles.map((title, index) => {
             return (
               <TouchableNativeFeedback
+                key={index}
                 onPress={() => {
                   onPress && onPress(index, title)
                 }}

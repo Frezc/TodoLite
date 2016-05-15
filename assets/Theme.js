@@ -21,3 +21,27 @@ export const TextOpacity = {
   hint: 0.38,
   dividers: 0.12
 }
+
+export const statusColors = {
+  // to do or doing
+  [0]: [
+    '#CFD8DC',
+    '#B0BEC5',
+    '#90A4AE',
+    '#78909C',
+    '#607D8B',
+    '#546E7A',
+    '#455A64',
+    '#37474F',
+    '#263238'
+  ],
+  
+  // complete
+  [1]: '#2196F3',
+  
+  // lay side
+  [2]: '#9C27B0',
+  
+  // abandon
+  [3]: '#673AB7'
+}

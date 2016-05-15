@@ -5,7 +5,8 @@ import {
   View,
   StatusBar,
   DrawerLayoutAndroid,
-  Navigator
+  Navigator,
+  BackAndroid
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Colors } from '../assets/Theme'
@@ -13,6 +14,9 @@ import NavigationView from '../components/NavigationView'
 import router from '../helpers/router'
 import { setAppBarTitle, setNavIndex } from '../actions/view'
 import { batchActions } from 'redux-batched-actions'
+
+const sceneConfig = Navigator.SceneConfigs.HorizontalSwipeJump
+sceneConfig.gestures = {}
 
 class Main extends Component {
 
@@ -33,6 +37,29 @@ class Main extends Component {
     this.drawer.closeDrawer()
   }
 
+  onProfilePress = () => {
+    this.drawer.closeDrawer()
+    this.navigator.push(router.login)
+  }
+
+  onHardwareBackPress = () => {
+    const currentRoutes = this.navigator.getCurrentRoutes()
+    if (currentRoutes.length > 1) {
+      this.navigator.pop()
+      return true
+    }
+
+    return false
+  }
+
+  componentDidMount() {
+    BackAndroid.addEventListener('hardwareBackPress', this.onHardwareBackPress)
+  }
+
+  componentWillUnmount() {
+    BackAndroid.removeEventListener('hardwareBackPress', this.onHardwareBackPress)
+  }
+
   renderScene = (route, navigator) => {
     const Comp = route.component
     return (
@@ -47,6 +74,7 @@ class Main extends Component {
       <NavigationView
         selectedIndex={selectedIndex}
         onNavItemPress={this.onNavItemPress}
+        onProfilePress={this.onProfilePress}
       />
     )
     return (
@@ -63,7 +91,7 @@ class Main extends Component {
         <Navigator
           initialRoute={router.initialPage}
           configureScene={(route) => {
-            return Navigator.SceneConfigs.FadeAndroid;
+            return sceneConfig
           }}
           renderScene={this.renderScene}
           ref={r => this.navigator = r}

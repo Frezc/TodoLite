@@ -11,6 +11,7 @@ import ViewPagerIndicator from '../components/ViewPagerIndicator'
 import LoadingButton from '../components/LoadingButton'
 import Button from '../components/Button'
 import { Colors } from '../assets/Theme'
+import Toolbar from '../components/Toolbar'
 
 class LoginPage extends Component {
 
@@ -28,6 +29,12 @@ class LoginPage extends Component {
 
   onIndicatorPress = (index, title) => {
     this.viewPager.setPage(index);
+  }
+  
+  onBackPress = () => {
+    const { navigator } = this.props
+    
+    navigator.pop()
   }
 
   renderLoginPage() {
@@ -113,8 +120,14 @@ class LoginPage extends Component {
   }
   
   render() {
+    
     return (
       <View style={{ flex: 1 }}>
+        <Toolbar
+          navIconName="arrow-back"
+          title={'Todo Lite'}
+          onIconClicked={this.onBackPress}
+        />
         <ViewPagerIndicator
           titles={['LOGIN', 'REGISTER']}
           onPress={this.onIndicatorPress}
@@ -142,7 +155,7 @@ const styles = StyleSheet.create({
     flex: 1,
     top: 200,
     alignItems: 'center',
-    padding: 32,
+    padding: 16,
     paddingTop: 36
     // backgroundColor: 'orange'
   }
