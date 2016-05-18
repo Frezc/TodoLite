@@ -8,15 +8,14 @@ import {
 import { Colors } from '../assets/Theme'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
-class MultiLinesSection extends Component {
+class SingleLineSection extends Component {
 
   static propTypes = {
     // when leftElement is undefined
     iconName: PropTypes.string,
     iconColor: PropTypes.string,
     leftElement: PropTypes.element,
-    text: PropTypes.string.isRequired,
-    secondText: PropTypes.string.isRequired
+    text: PropTypes.string.isRequired
   }
 
   static defaultProps = {
@@ -34,17 +33,16 @@ class MultiLinesSection extends Component {
       return <View style={styles.icon} />
     }
   }
-  
+
   render() {
-    const { text, secondText } = this.props
+    const { text } = this.props
 
     return (
       <TouchableNativeFeedback>
         <View style={styles.section}>
           {this.renderLeftItem()}
-          <View style={styles.twoLineItems}>
-            <Text style={styles.text}>{text}</Text>
-            <Text style={styles.secondText} >{secondText}</Text>
+          <View style={styles.singleLineItems}>
+            <Text style={styles.text} numberOfLines={1}>{text}</Text>
           </View>
         </View>
       </TouchableNativeFeedback>
@@ -54,33 +52,26 @@ class MultiLinesSection extends Component {
 
 const styles = StyleSheet.create({
   section: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 40
   },
   icon: {
     marginLeft: 16,
     marginRight: 16,
-    marginTop: 20,
-    marginBottom: 20,
     width: 20
   },
-  twoLineItems: {
+  singleLineItems: {
     flex: 1,
     paddingLeft: 16,
     paddingRight: 16,
-    paddingTop: 11,
-    paddingBottom: 11,
     alignItems: 'stretch'
   },
   text: {
     fontSize: 13,
     color: 'black',
     opacity: 0.87
-  },
-  secondText: {
-    fontSize: 13,
-    color: 'black',
-    opacity: 0.54
   }
 })
 
-export default MultiLinesSection
+export default SingleLineSection

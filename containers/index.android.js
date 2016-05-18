@@ -62,8 +62,9 @@ class Main extends Component {
 
   renderScene = (route, navigator) => {
     const Comp = route.component
+    const props = route.props
     return (
-      <Comp navigator={navigator} openDrawer={this.openDrawer} />
+      <Comp navigator={navigator} openDrawer={this.openDrawer} {...props} />
     );
   }
 

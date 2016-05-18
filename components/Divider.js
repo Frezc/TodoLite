@@ -7,7 +7,7 @@ import {
 class Divider extends Component {
 
   static propTypes = {
-    // 通过StyleSheet创建的style实际上是一个数字标识
+    // 通过StyleSheet创建的style实际上是一个数字标识, 这里其实没必要验证
     style: PropTypes.oneOfType([PropTypes.object, PropTypes.number])
   }
 

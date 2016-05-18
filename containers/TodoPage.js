@@ -12,6 +12,8 @@ import Toolbar from '../components/Toolbar'
 import Subheader from '../components/Subheader'
 import Divider from '../components/Divider'
 import Section from '../components/MultiLinesSection'
+import SingleLineSection from '../components/SingleLineSection'
+import Checkbox from '../components/Checkbox'
 import { TypeIcon, StatusText } from '../constants'
 
 class TodoPage extends Component {
@@ -22,12 +24,18 @@ class TodoPage extends Component {
     navigator.pop()
   }
 
+  onScroll = (e) => {
+    // console.log(e.nativeEvent.contentOffset.y)
+    // console.log(this.title)
+  }
+
   renderContent() {
     return (
-      <ScrollView style={styles.fillParent}>
+      <ScrollView style={styles.fillParent} onScroll={this.onScroll}>
         <Section
           text="Title"
           secondText="Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是"
+          ref={r => this.title = r}
         />
         <Divider style={styles.divider} />
         <Section
@@ -70,10 +78,9 @@ class TodoPage extends Component {
           text="Contents"
           leftPadding={68}
         />
-        <Section
-          text="Location"
-          secondText="杭州电子科技大学"
-          iconName="location-on"
+        <SingleLineSection
+          text="Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是Tes"
+          leftElement={<Checkbox style={styles.leftEl} color={Colors.accent100} />}
         />
       </ScrollView>
     )
@@ -103,6 +110,11 @@ const styles = StyleSheet.create({
   section: {
     flexDirection: 'row'
   },
+  leftEl: {
+    marginLeft: 16,
+    marginRight: 16,
+    width: 20
+  }
 })
 
 export default TodoPage
