@@ -16,7 +16,8 @@ class MultiLinesSection extends Component {
     iconColor: PropTypes.string,
     leftElement: PropTypes.element,
     text: PropTypes.string.isRequired,
-    secondText: PropTypes.string.isRequired
+    secondText: PropTypes.string.isRequired,
+    onPress: PropTypes.func
   }
 
   static defaultProps = {
@@ -36,10 +37,10 @@ class MultiLinesSection extends Component {
   }
   
   render() {
-    const { text, secondText } = this.props
+    const { text, secondText, onPress } = this.props
 
     return (
-      <TouchableNativeFeedback>
+      <TouchableNativeFeedback onPress={onPress}>
         <View style={styles.section}>
           {this.renderLeftItem()}
           <View style={styles.twoLineItems}>

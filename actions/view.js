@@ -1,15 +1,15 @@
-import { SET_APPBAR_TITLE, SET_NAV_INDEX } from '../constants/actionTypes'
-
-export function setAppBarTitle(title) {
-  return {
-    type: SET_APPBAR_TITLE,
-    payload: title
-  }
-}
+import { SET_NAV_INDEX, SET_DRAWER_LOCKMODE } from '../constants/actionTypes'
 
 export function setNavIndex(index) {
   return {
     type: SET_NAV_INDEX,
     payload: index
+  }
+}
+
+export function setDrawerLockMode(mode) {
+  return {
+    type: SET_DRAWER_LOCKMODE,
+    payload: mode
   }
 }

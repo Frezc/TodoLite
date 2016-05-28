@@ -15,7 +15,8 @@ class SingleLineSection extends Component {
     iconName: PropTypes.string,
     iconColor: PropTypes.string,
     leftElement: PropTypes.element,
-    text: PropTypes.string.isRequired
+    text: PropTypes.string.isRequired,
+    onPress: PropTypes.func
   }
 
   static defaultProps = {
@@ -35,10 +36,10 @@ class SingleLineSection extends Component {
   }
 
   render() {
-    const { text } = this.props
+    const { text, onPress } = this.props
 
     return (
-      <TouchableNativeFeedback>
+      <TouchableNativeFeedback onPress={onPress}>
         <View style={styles.section}>
           {this.renderLeftItem()}
           <View style={styles.singleLineItems}>
@@ -70,7 +71,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 13,
     color: 'black',
-    opacity: 0.87
+    opacity: 0.54
   }
 })
 

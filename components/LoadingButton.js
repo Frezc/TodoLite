@@ -16,7 +16,8 @@ class LoadingButton extends Component {
     style: PropTypes.object,
     buttonStyle: PropTypes.object,
     buttonTextStyle: PropTypes.object,
-    progressBarStyle: PropTypes.object
+    progressBarStyle: PropTypes.object,
+    onPress: PropTypes.func
   }
 
   static defaultProps = {
@@ -28,10 +29,10 @@ class LoadingButton extends Component {
   }
 
   renderButton() {
-    const { style, buttonStyle, buttonTextStyle, text } = this.props;
+    const { style, buttonStyle, buttonTextStyle, text, onPress } = this.props;
 
     return (
-      <TouchableNativeFeedback>
+      <TouchableNativeFeedback onPress={onPress}>
         <View style={[styles.root, style, buttonStyle]}>
           <Text style={buttonTextStyle}>
             {text}

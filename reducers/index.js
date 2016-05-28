@@ -1,8 +1,8 @@
 /** state tree
  * {
  *   view: {
- *     appBarTitle: string, app bar的标题
- *     navigationViewSelectedIndex: int, navigation view 菜单选择索引
+ *     navigationViewSelectedIndex: int, navigation view 菜单选择索引,
+ *     drawerLockMode: ('unlocked', 'locked-closed', 'locked-open') 
  *   }
  * }
  */

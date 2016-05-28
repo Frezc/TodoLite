@@ -1,3 +1,6 @@
 
-export const SET_APPBAR_TITLE = 'SET_APPBAR_TITLE'
 export const SET_NAV_INDEX = 'SET_NAV_INDEX'
+export const SET_DRAWER_LOCKMODE = 'SET_DRAWER_LOCKMODE'
+
+export const AUTH_SUCCESS = 'AUTH_SUCCESS'
+export const AUTH_FAILED = 'AUTH_FAILED'

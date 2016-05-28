@@ -106,7 +106,8 @@ const styles = StyleSheet.create({
   root: {
     height: 36,
     flexDirection: 'column',
-    backgroundColor: Colors.primary500
+    backgroundColor: Colors.primary500,
+    elevation: 2
   },
   titles: {
     flex: 1,

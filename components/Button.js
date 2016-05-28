@@ -10,15 +10,15 @@ import { Colors } from '../assets/Theme'
 class Button extends Component {
 
   static propTypes = {
-    text: PropTypes.string.isRequired,
+    // text: PropTypes.string.isRequired,  // string, number
+    color: PropTypes.string,
     disabled: PropTypes.bool,
     type: PropTypes.oneOf(['flat', 'raise']),
-    style: PropTypes.object,
-    textStyle: PropTypes.object
+    onPress: PropTypes.func
   }
 
   static defaultProps = {
-    count: 0,
+    color: Colors.accent200,
     disabled: false,
     type: 'flat',
     style: {},
@@ -26,19 +26,19 @@ class Button extends Component {
   }
 
   render() {
-    const { text, style, textStyle, disabled, type } = this.props;
+    const { text, style, textStyle, color, disabled, type, onPress } = this.props;
 
     let rootStyles = [styles.root, style]
     let textStyles = [styles.text, textStyle]
 
     if (type == 'raise') {
-      rootStyles.push({ backgroundColor: disabled ? 'darkgray' : Colors.accent200 })
+      rootStyles.push({ backgroundColor: disabled ? 'darkgray' : color })
     } else {
-      textStyles.push({color: disabled ? 'darkgray' : Colors.accent200})
+      textStyles.push({color: disabled ? 'darkgray' : color })
     }
 
     return (
-      <TouchableNativeFeedback disabled={disabled}>
+      <TouchableNativeFeedback disabled={disabled} onPress={onPress}>
         <View style={rootStyles}>
           <Text style={textStyles}>
             {text}
@@ -51,7 +51,7 @@ class Button extends Component {
 
 const styles = StyleSheet.create({
   root: {
-    width: 80,
+    width: 64,
     height: 36,
     justifyContent: 'center',
     alignItems: 'center'

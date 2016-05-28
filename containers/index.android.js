@@ -12,11 +12,10 @@ import { connect } from 'react-redux';
 import { Colors } from '../assets/Theme'
 import NavigationView from '../components/NavigationView'
 import router from '../helpers/router'
-import { setAppBarTitle, setNavIndex } from '../actions/view'
+import { setNavIndex } from '../actions/view'
 import { batchActions } from 'redux-batched-actions'
-
-const sceneConfig = Navigator.SceneConfigs.HorizontalSwipeJump
-sceneConfig.gestures = {}
+import { swipeWithoutGestures } from '../constants/sceneConfigure'
+import KeyboardAndroid from '../components/KeyboardAndroid';
 
 class Main extends Component {
 
@@ -33,7 +32,7 @@ class Main extends Component {
       this.navigator.replace(router.history)
     }
 
-    dispatch(batchActions([setAppBarTitle(title), setNavIndex(index)]))
+    dispatch(setNavIndex(index))
     this.drawer.closeDrawer()
   }
 
@@ -43,6 +42,7 @@ class Main extends Component {
   }
 
   onHardwareBackPress = () => {
+    console.log('root back press');
     const currentRoutes = this.navigator.getCurrentRoutes()
     if (currentRoutes.length > 1) {
       this.navigator.pop()
@@ -51,13 +51,23 @@ class Main extends Component {
 
     return false
   }
+  
+  onKeyboardChanged = (isVisible) => {
+    console.log('keyboard is ' + isVisible);
+  }
 
   componentDidMount() {
     BackAndroid.addEventListener('hardwareBackPress', this.onHardwareBackPress)
+    KeyboardAndroid.addEventListener('visibleChange', this.onKeyboardChanged)
   }
 
   componentWillUnmount() {
     BackAndroid.removeEventListener('hardwareBackPress', this.onHardwareBackPress)
+    KeyboardAndroid.removeEventListener('visibleChange', this.onKeyboardChanged)
+  }
+
+  configureScene = (route) => {
+    return route.configureScene || swipeWithoutGestures
   }
 
   renderScene = (route, navigator) => {
@@ -69,7 +79,7 @@ class Main extends Component {
   }
 
   render() {
-    const { selectedIndex } = this.props
+    const { selectedIndex, lockMode } = this.props
 
     var navigationView = (
       <NavigationView
@@ -78,12 +88,15 @@ class Main extends Component {
         onProfilePress={this.onProfilePress}
       />
     )
+
+    // console.log('instanceof' + (navigationView.type === NavigationView))
     return (
       <DrawerLayoutAndroid
         renderNavigationView={() => {
           return navigationView
         }}
         drawerWidth={300}
+        drawerLockMode={lockMode}
         ref={drawer => this.drawer = drawer}
       >
         <StatusBar
@@ -91,9 +104,7 @@ class Main extends Component {
         />
         <Navigator
           initialRoute={router.initialPage}
-          configureScene={(route) => {
-            return sceneConfig
-          }}
+          configureScene={this.configureScene}
           renderScene={this.renderScene}
           ref={r => this.navigator = r}
         />
@@ -103,12 +114,13 @@ class Main extends Component {
 }
 
 const styles = StyleSheet.create({
-
+  
 });
 
 function select(state) {
   return {
-    selectedIndex: state.view.navigationViewSelectedIndex
+    selectedIndex: state.view.navigationViewSelectedIndex,
+    lockMode: state.view.drawerLockMode
   }
 }
 
