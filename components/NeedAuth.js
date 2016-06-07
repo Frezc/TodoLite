@@ -2,12 +2,20 @@ import React, { Component } from 'react';
 import {
   StyleSheet,
   Text,
-  View
+  View,
+  ToastAndroid
 } from 'react-native';
-import Button from '../components/Button'
+import Button from './Button'
+import router from '../helpers/router'
 
-class NeedAuthPage extends Component {
+class NeedAuth extends Component {
 
+  toLogin = () => {
+    const { navigator } = this.props
+    // ToastAndroid.show('to login: ' + router.login, ToastAndroid.LONG)
+    navigator.push(router.login)
+  }
+  
   render() {
     return (
       <View style={styles.page}>
@@ -18,6 +26,7 @@ class NeedAuthPage extends Component {
           text="LOGIN"
           type="raise"
           style={styles.button}
+          onPress={this.toLogin}
         />
       </View>
     )
@@ -42,4 +51,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default NeedAuthPage
+export default NeedAuth

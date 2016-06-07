@@ -1,3 +1,4 @@
+import { ToastAndroid } from 'react-native';
 
 export function generateRandomStringArray(length, str = 'random') {
   let array = new Array(length)
@@ -37,4 +38,73 @@ export function fetchR(url, params) {
     };
     wrappedFetch(params.retry);
   });
+}
+
+/**
+ * resolve laravel validation error object
+ * {
+ *   [param name]: ["error messages", ..]
+ * }
+ * @param errMsg array ["error messages"]
+ */
+export function resolveValidationError(errMsg) {
+  let messages = []
+  for (const msgs of Object.values(errMsg)) {
+    for (const msg of msgs) {
+      messages.push(msg)
+    }
+  }
+  return messages
+}
+
+/**
+ * handle error response
+ * @param response
+ */
+export function resolveErrorResponse(response) {
+  switch (response.status) {
+    case 430:
+      ToastAndroid.show('Wrong code. Please retry.', ToastAndroid.SHORT)
+      break
+    case 431:
+      ToastAndroid.show('Code is expired. Please re-send email.', ToastAndroid.SHORT)
+      break
+    case 400:
+      response.json().then(json => {
+        ToastAndroid.show(resolveValidationError(json.error).join(' '), ToastAndroid.SHORT)
+      })
+      break
+    default:
+      response.text().then(text => {
+        ToastAndroid.show(text, ToastAndroid.SHORT)
+      })
+  }
+}
+
+/**
+ * construct query string by params obj
+ * @param params
+ */
+export function constructQuery(params = {}) {
+  let query = []
+  for (const key of Object.keys(params)) {
+    query.push(key + '=' + params[key])
+  }
+  return query.join('&')
+}
+
+/**
+ * format date to string
+ * todo
+ * @param date
+ */
+export function formatDate(date) {
+  const year = date.getFullYear()
+  const month = `0${date.getMonth()}`.slice(-2)
+  const day = `0${date.getDate()}`.slice(-2)
+  const hour = date.getHours() > 12 ? date.getHours() - 12 : date.getHours()
+  const minute = `0${date.getMinutes()}`.slice(-2)
+  const ampm = date.getHours() > 12 ? 'pm' : 'am'
+
+  return `${year}-${month}-${day} ${hour}:${minute} ${ampm}`
 }

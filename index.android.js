@@ -5,6 +5,8 @@ import {
 import configureStore from './helpers/configureStore'
 import { Provider } from 'react-redux'
 import Main from './containers'
+import './components/Keyboard'
+import { appStart } from './actions/network'
 
 const store = configureStore()
 
@@ -15,5 +17,7 @@ function TodoLite() {
     </Provider>
   );
 }
+
+store.dispatch(appStart())
 
 AppRegistry.registerComponent('TodoLite', () => TodoLite);

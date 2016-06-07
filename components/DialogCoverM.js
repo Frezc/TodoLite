@@ -11,6 +11,7 @@ import {
   BackAndroid
 } from 'react-native'
 import Button from './Button'
+import Keyboard from './Keyboard'
 
 class DialogCover extends Component {
 
@@ -55,6 +56,7 @@ class DialogCover extends Component {
       actions: [],
       noPadding: false
     }, config))
+    this.state.dialogTop.setValue(0)
   }
 
   close() {
@@ -68,9 +70,27 @@ class DialogCover extends Component {
     Animated.spring(
       this.state.dialogTop,
       {
-        toValue: isfit ? -125 : 0
+        toValue: isfit ? -120 : 0
       }
     ).start()
+  }
+
+  onKeyboardHide = () => {
+    this.fitKeyboard(false)    
+  }
+
+  onKeyboardShow = () => {
+    this.fitKeyboard(true)
+  }
+
+  componentDidMount() {
+    Keyboard.addEventListener('keyboardDidHide', this.onKeyboardHide)
+    Keyboard.addEventListener('keyboardDidShow', this.onKeyboardShow)
+  }
+
+  componentWillUnmount() {
+    Keyboard.removeEventListener('keyboardDidHide', this.onKeyboardHide)
+    Keyboard.removeEventListener('keyboardDidShow', this.onKeyboardShow)
   }
 
   renderDialog() {
@@ -88,6 +108,7 @@ class DialogCover extends Component {
       <Modal
         onRequestClose={onRequestClose}
         visible={this.state.visible}
+        transparent
       >
         <TouchableWithoutFeedback onPress={onRequestClose}>
           <View style={[styles.root, { height: height - 24, width: width }]}>
@@ -129,7 +150,7 @@ const styles = StyleSheet.create({
     elevation: 2,        // fix android elevation bug
     left: 0,
     top: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: 'rgba(0,0,0,0.54)',
     justifyContent: 'center',
     alignItems: 'center'
   },

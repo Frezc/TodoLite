@@ -15,30 +15,48 @@ import { statusColors } from '../assets/Theme'
 class TodoSection extends Component {
   
   static propTypes = {
-    type: PropTypes.oneOf(Object.keys(TypeIcon)),
-    status: PropTypes.oneOf([0, 1, 2, 3]),
-    priority: PropTypes.number,
+    data: PropTypes.shape({
+      type: PropTypes.oneOf(Object.keys(TypeIcon)).isRequired,
+      status: PropTypes.oneOf(['todo', 'complete', 'layside', 'abandon']).isRequired,
+      priority: PropTypes.number.isRequired,
+      title: PropTypes.string.isRequired,
+      start_at: PropTypes.string,
+      deadline: PropTypes.string,
+      location: PropTypes.string,
+      created_at: PropTypes.string
+    }).isRequired,
     onPress: PropTypes.func
   }
 
   static defaultProps = {
-    type: 'default',
-    status: 0,
-    priority: 5
+
   }
 
   getIconColor = () => {
-    const { status, priority } = this.props;
+    const { status, priority } = this.props.data
 
-    if (status == 0) {
-      return statusColors[0][priority]
+    if (status == 'todo') {
+      return statusColors['todo'][priority]
     } else {
       return statusColors[status]
     }
   }
+
+  getSecondText = () => {
+    const { start_at, location, deadline, created_at } = this.props.data
+    let text = []
+    location && text.push(`Location: ${location}`)
+    deadline && text.push(`Deadline: ${deadline}`)
+    start_at && text.length < 2 && text.push(`Start at: ${start_at}`)
+    if (text.length == 0) {
+      text.push(`Created at: ${created_at}`)
+    }
+    return text.join(', ')
+  }
   
   render() {
-    const { data, type, onPress } = this.props
+    const { data, onPress } = this.props
+    const { type, title } = data
 
     return (
       <TouchableNativeFeedback onPress={onPress}>
@@ -48,10 +66,10 @@ class TodoSection extends Component {
           </View>
           <View style={styles.abstract}>
             <Text style={styles.title} numberOfLines={1}>
-              {data}
+              {title}
             </Text>
             <Text style={styles.subTitle} numberOfLines={1}>
-              Location: 23333333, Start At: 2016-1-25
+              {this.getSecondText()}
             </Text>
           </View>
           <View style={styles.rightIcon}>

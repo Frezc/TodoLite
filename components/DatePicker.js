@@ -5,26 +5,37 @@ import {
   View,
   TouchableWithoutFeedback,
   DatePickerAndroid,
-  TimePickerAndroid
+  TimePickerAndroid,
+  ToastAndroid
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 class DatePicker extends Component {
 
   static propTypes = {
-    dateTime: PropTypes.number
+    defaultDate: PropTypes.object.isRequired,
+    onChangeDate: PropTypes.func
   }
 
-  static defaultProps = {
-    dateTime: Date.now()
+  state = {
+    // 生成新的Date对象
+    date: this.props.defaultDate
   }
 
   selectDate = () => {
+    const { onChangeDate } = this.props
+    const { date } = this.state
     DatePickerAndroid.open({
-      date: new Date()
+      date: date
     }).then(({ action, year, month, day }) => {
       if (action !== DatePickerAndroid.dismissedAction) {
-        console.log(year)
+        date.setFullYear(year)
+        date.setMonth(month)
+        date.setDate(day)
+        this.setState({
+          date: date
+        })
+        onChangeDate && onChangeDate(date)
       }
     }).catch(({ code, message }) => {
 
@@ -32,13 +43,19 @@ class DatePicker extends Component {
   }
 
   selectTime = () => {
-    const now = new Date()
+    const { onChangeDate } = this.props
+    const { date } = this.state
     TimePickerAndroid.open({
-      hour: now.getHours(),
-      minute: now.getMinutes()
+      hour: date.getHours(),
+      minute: date.getMinutes()
     }).then(({ action, hour, minute }) => {
       if (action !== DatePickerAndroid.dismissedAction) {
-        console.log(hour)
+        date.setHours(hour)
+        date.setMinutes(minute)
+        this.setState({
+          date
+        })
+        onChangeDate && onChangeDate(date)
       }
     }).catch(({ code, message }) => {
 
@@ -46,20 +63,29 @@ class DatePicker extends Component {
   }
 
   render() {
-
+    const { date } = this.state
+    console.log(this.state);
+    // ToastAndroid.show(''+date.getHours(), ToastAndroid.LONG)
+    const year = date.getFullYear()
+    const month = `0${date.getMonth() + 1}`.slice(-2)
+    const day = `0${date.getDate()}`.slice(-2)
+    const hour = date.getHours() > 12 ? date.getHours() - 12 : date.getHours()
+    const minute = `0${date.getMinutes()}`.slice(-2)
+    const ampm = date.getHours() > 12 ? 'pm' : 'am'
+    
     return (
         <View style={styles.root}>
           <TouchableWithoutFeedback onPress={this.selectDate}>
 
             <View style={[styles.selectableCell, styles.date]}>
-              <Text>2016 - 06 - 14</Text>
+              <Text>{year} - {month} - {day}</Text>
               <Icon name="arrow-drop-down" size={16} style={styles.alignRigth} />
             </View>
           </TouchableWithoutFeedback>
           <TouchableWithoutFeedback onPress={this.selectTime}>
 
             <View style={[styles.selectableCell, styles.time]}>
-              <Text>8:00 PM</Text>
+              <Text>{hour}:{minute} {ampm}</Text>
               <Icon name="arrow-drop-down" size={16} style={styles.alignRigth} />
             </View>
           </TouchableWithoutFeedback>

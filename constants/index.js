@@ -1,5 +1,6 @@
 
 export const HOST = '192.168.2.50'
+export const APPIDENTITY = 'todolite_android'
 
 export const TodoType = ['default', 'work', 'study', 'entertainment', 'trivia', 'outOfDoor']
 
@@ -13,4 +14,18 @@ export const TypeIcon = {
   outOfDoor: 'directions-walk'
 }
 
-export const StatusText = ['To do', 'Complete', 'Lay side', 'Abandon']
+export const TypeText = {
+  default: 'Default',
+  entertainment: 'Entertainment',
+  work: 'Work',
+  study: 'Study',
+  trivia: 'Trivia',
+  outOfDoor: 'Go out'
+}
+
+export const StatusText = {
+  todo: 'To do',
+  complete: 'Complete',
+  layside: 'Lay side',
+  abandon: 'Abandon'
+}

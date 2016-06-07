@@ -32,7 +32,7 @@ class SliderWithIndicator extends Component {
         this.setState({
           value
         })
-        onValueChange(value)
+        onValueChange && onValueChange(value)
       }
     })
 

@@ -8,36 +8,63 @@ import {
   ListView,
   RefreshControl
 } from 'react-native';
+import { connect } from 'react-redux';
 import { generateRandomStringArray } from '../helpers'
 import { Colors } from '../assets/Theme'
 import Toolbar from '../components/Toolbar'
 import TodoSection from '../components/TodoSection'
 import router from '../helpers/router'
+import NeedAuth from '../components/NeedAuth'
+import { fetchScheduleNetwork } from '../actions/network'
 
 class SchedulePage extends Component {
 
+  static propsTypes = {
+    token: PropTypes.string,
+    loading: PropTypes.bool,
+    data: PropTypes.arrayOf(PropTypes.object)
+  }
+
+  static defaultProps = {
+    loading: false,
+    data: []
+  }
+
   data = generateRandomStringArray(100, '一点事情字数补丁字数补丁一点事情字数补丁字数补丁一点事情字数补丁字数补丁')
 
-  state = {
-    refreshing: false,
-    dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}).cloneWithRows(this.data)
+  constructor(props) {
+    super(props)
+    this.state = {
+      dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}).cloneWithRows(props.data)
+    }
   }
 
   onRefresh = () => {
+    const { dispatch, token } = this.props
+
+    dispatch(fetchScheduleNetwork(token))
+  }
+
+  componentWillReceiveProps(nextProps) {
     this.setState({
-      refreshing: true
+      dataSource: this.state.dataSource.cloneWithRows(nextProps.data)
     })
-    console.log('onrefresh')
   }
 
   renderSection = (rowData, sectionID, rowID, highlightRow) => {
-
     return (
       <TodoSection
-        type="work"
         data={rowData}
         onPress={() => {
-          this.props.navigator.push(router.todo)
+          this.props.navigator.push({
+            ...router.todo,
+            props: {
+              data: rowData,
+              onChangeSaved: data => {
+              
+              }
+            }
+          })
         }}
       />
     )
@@ -52,7 +79,7 @@ class SchedulePage extends Component {
   }
   
   render() {
-    const { openDrawer } = this.props
+    const { openDrawer, token, loading, navigator } = this.props
 
     return (
       // flex: 1 缺少ListView会无法滚动
@@ -62,19 +89,26 @@ class SchedulePage extends Component {
           title={'Schedule'}
           onIconClicked={openDrawer}
         />
-        <ListView
-          style={{ backgroundColor: 'white' }}
-          dataSource={this.state.dataSource}
-          refreshControl={
-            <RefreshControl
-              colors={[Colors.accent100, Colors.accent200, Colors.accent400]}
-              refreshing={this.state.refreshing}
-              onRefresh={this.onRefresh}
-            />
-          }
-          renderHeader={() => <Text>Header</Text>}
-          renderRow={rowData => this.renderSection(rowData)}
-        />
+        {token ?
+          <ListView
+            style={{ backgroundColor: 'white' }}
+            dataSource={this.state.dataSource}
+            enableEmptySections
+            refreshControl={
+              <RefreshControl
+                colors={[Colors.accent100, Colors.accent200, Colors.accent400]}
+                refreshing={loading}
+                onRefresh={this.onRefresh}
+              />
+            }
+            renderHeader={() => <Text>Header</Text>}
+            renderRow={this.renderSection}
+          />
+          :
+          <NeedAuth
+            navigator={navigator}
+          />
+        }
       </View>
     )
   }
@@ -84,4 +118,13 @@ const styles = StyleSheet.create({
 
 })
 
-export default SchedulePage
+function select(state, ownProps) {
+  return {
+    token: state.auth.token,
+    loading: state.view.schedulePage.loading,
+    data: state.view.schedulePage.data,
+    ...ownProps
+  }
+}
+
+export default connect(select)(SchedulePage)

@@ -6,16 +6,17 @@ import {
   StatusBar,
   DrawerLayoutAndroid,
   Navigator,
-  BackAndroid
+  BackAndroid,
+  DeviceEventEmitter
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Colors } from '../assets/Theme'
 import NavigationView from '../components/NavigationView'
 import router from '../helpers/router'
 import { setNavIndex } from '../actions/view'
+import { logout } from '../actions/network'
 import { batchActions } from 'redux-batched-actions'
 import { swipeWithoutGestures } from '../constants/sceneConfigure'
-import KeyboardAndroid from '../components/KeyboardAndroid';
 
 class Main extends Component {
 
@@ -24,15 +25,22 @@ class Main extends Component {
   }
 
   onNavItemPress = (index, title) => {
-    const { dispatch } = this.props
+    const { dispatch, token } = this.props
 
-    if (index == 0) {
-      this.navigator.replace(router.schedule)
-    } else {
-      this.navigator.replace(router.history)
+    switch (index) {
+      case 0:
+        this.navigator.replace(router.schedule)
+        break
+      case 1:
+        this.navigator.replace(router.history)
+        break
+      case -1:
+        dispatch(logout(token))
     }
 
-    dispatch(setNavIndex(index))
+    if (index != -1) {
+      dispatch(setNavIndex(index))
+    }
     this.drawer.closeDrawer()
   }
 
@@ -51,19 +59,18 @@ class Main extends Component {
 
     return false
   }
-  
-  onKeyboardChanged = (isVisible) => {
-    console.log('keyboard is ' + isVisible);
+
+  componentWillMount() {
+    const { dispatch } = this.props;
   }
 
   componentDidMount() {
     BackAndroid.addEventListener('hardwareBackPress', this.onHardwareBackPress)
-    KeyboardAndroid.addEventListener('visibleChange', this.onKeyboardChanged)
   }
 
   componentWillUnmount() {
     BackAndroid.removeEventListener('hardwareBackPress', this.onHardwareBackPress)
-    KeyboardAndroid.removeEventListener('visibleChange', this.onKeyboardChanged)
+
   }
 
   configureScene = (route) => {
@@ -79,13 +86,14 @@ class Main extends Component {
   }
 
   render() {
-    const { selectedIndex, lockMode } = this.props
+    const { selectedIndex, lockMode, user } = this.props
 
     var navigationView = (
       <NavigationView
         selectedIndex={selectedIndex}
         onNavItemPress={this.onNavItemPress}
         onProfilePress={this.onProfilePress}
+        userInfo={user}
       />
     )
 
@@ -120,7 +128,9 @@ const styles = StyleSheet.create({
 function select(state) {
   return {
     selectedIndex: state.view.navigationViewSelectedIndex,
-    lockMode: state.view.drawerLockMode
+    lockMode: state.view.drawerLockMode,
+    user: state.auth.user,
+    token: state.auth.token
   }
 }
 

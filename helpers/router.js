@@ -1,8 +1,9 @@
 import SchedulePage from '../containers/SchedulePage'
 import HistoryPage from '../containers/HistoryPage'
 import LoginPage from '../containers/LoginPage'
-import NeedAuthPage from '../containers/NeedAuthPage'
+import NeedAuthPage from '../components/NeedAuth'
 import TodoPage from '../containers/TodoPage'
+import EditorPage from '../containers/EditorPage'
 
 import string from '../constants/string'
 
@@ -26,6 +27,9 @@ const router = {
   todo: {
     name: 'Todo',
     component: TodoPage
+  },
+  textEditor: {
+    component: EditorPage
   }
 }
 

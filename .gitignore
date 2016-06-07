@@ -38,5 +38,5 @@ buck-out/
 \.buckd/
 android/app/libs
 android/keystores/debug.keystore
-android/TodoLite.iml
-android/app/app.iml
+TodoLite.iml
+/android/app/app.iml

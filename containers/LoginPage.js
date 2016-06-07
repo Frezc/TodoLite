@@ -5,7 +5,8 @@ import {
   View,
   ViewPagerAndroid,
   TextInput,
-  ToastAndroid
+  ToastAndroid,
+  ScrollView
 } from 'react-native';
 import { connect } from 'react-redux';
 import ViewPagerIndicator from '../components/ViewPagerIndicator'
@@ -14,13 +15,15 @@ import Button from '../components/Button'
 import { Colors } from '../assets/Theme'
 import Toolbar from '../components/Toolbar'
 import { setDrawerLockMode } from '../actions/view'
-import { authSuccess } from '../actions/network'
-import { AUTH_URL } from '../constants/urls'
-import { fetchR } from '../helpers'
+import { authSuccess, fetchScheduleNetwork } from '../actions/network'
+import { AUTH_URL, SENDEMAIL_URL, REGISTER_URL } from '../constants/urls'
+import { APPIDENTITY } from '../constants'
+import { fetchR, resolveErrorResponse } from '../helpers'
 import reactMixin from 'react-mixin'
 import TimerMixin from 'react-timer-mixin';
 import isEmail from 'validator/lib/isEmail';
 import isLength from 'validator/lib/isLength';
+import dismissKeyboard from 'dismissKeyboard'
 
 class LoginPage extends Component {
 
@@ -37,7 +40,42 @@ class LoginPage extends Component {
     reName: '',
     reCode: '',
     countDown: 0,
+    getCodeDisable: false,
     registering: false
+  }
+
+  /**
+   * @return boolean
+   */
+  validateRe = () => {
+    if (!isEmail(this.state.reEmail)) {
+      ToastAndroid.show('Invalid email address.', ToastAndroid.SHORT)
+      return false
+    } else if (!isLength(this.state.rePw, { min: 6, max: 32 })) {
+      ToastAndroid.show('Length of PW should between 6 and 32.', ToastAndroid.SHORT)
+      return false
+    } else if (this.state.rePw !== this.state.rePwr) {
+      ToastAndroid.show('Twice PW is different.', ToastAndroid.SHORT)
+      return false
+    } else if (!isLength(this.state.reName, { min: 1, max: 32 })) {
+      ToastAndroid.show('Length of PW should between 1 and 32', ToastAndroid.SHORT)
+      return false
+    } else if (!isLength(this.state.reCode, { min: 1 })) {
+      ToastAndroid.show('Code can\'t be empty.', ToastAndroid.SHORT)
+      return false
+    }
+
+    return true
+  }
+
+  clearRegisterInfo = () => {
+    this.setState({
+      reEmail: '',
+      rePw: '',
+      rePwr: '',
+      reName: '',
+      reCode: ''
+    })
   }
 
   onPageScroll = e => {
@@ -61,11 +99,14 @@ class LoginPage extends Component {
   onLogin = () => {
     const { dispatch, navigator } = this.props
 
+    dismissKeyboard()
+
     this.setState({
       logining: true
     })
 
     const data = new FormData()
+    data.append('app', APPIDENTITY)
     data.append('email', this.state.email)
     data.append('password', this.state.password)
 
@@ -77,7 +118,9 @@ class LoginPage extends Component {
         response.json().then(json => {
           ToastAndroid.show(json.token, ToastAndroid.SHORT);
           dispatch(authSuccess(json))
-
+          
+          // 登陆成功后获取数据
+          dispatch(fetchScheduleNetwork(json.token))
           navigator.pop()
         })
       } else {
@@ -87,10 +130,13 @@ class LoginPage extends Component {
         })
       }
 
-      // this.setState({
-      //   logining: false
-      // })
+      this.setState({
+        logining: false
+      })
     }).catch(error => {
+      this.setState({
+        logining: false
+      })
       ToastAndroid.show(error, ToastAndroid.SHORT);
     })
   }
@@ -99,15 +145,83 @@ class LoginPage extends Component {
     if (isEmail(this.state.reEmail)) {
       
       this.setState({
-        countDown: 60
+        getCodeDisable: true
       })
 
-      this.timer = this.setInterval(() => {
-        this.setState({
-          countDown: this.state.countDown - 1
+      console.log(`${SENDEMAIL_URL}?email=${this.state.reEmail}`);
+      fetchR(`${SENDEMAIL_URL}?email=${this.state.reEmail}`)
+        .then(response => {
+          if (response.ok) {
+            ToastAndroid.show('Email sent successfully', ToastAndroid.SHORT)
+          } else {
+            resolveErrorResponse(response)
+          }
+
+          this.setState({
+            countDown: 60
+          })
+
+          this.timer = this.setInterval(() => {
+            this.setState({
+              countDown: this.state.countDown - 1
+            })
+            if (this.state.countDown <= 0) {
+              this.clearInterval(this.timer)
+              this.setState({
+                getCodeDisable: false
+              })
+            }
+          }, 1000)
         })
-        if (this.state.countDown <= 0) this.clearInterval(this.timer)
-      }, 100)
+        .catch(err => {
+          ToastAndroid.show(err, ToastAndroid.SHORT)
+          this.setState({
+            getCodeDisable: false
+          })
+        })
+    } else {
+      ToastAndroid.show('Email is invalid.', ToastAndroid.SHORT)
+    }
+  }
+
+  onRegister = () => {
+    if (this.validateRe()) {
+      this.setState({
+        registering: true
+      })
+
+      const { reEmail, rePw, reName, reCode } = this.state
+      const params = new FormData()
+      params.append('email', reEmail)
+      params.append('password', rePw)
+      params.append('nickname', reName)
+      params.append('code', reCode)
+
+      fetchR(REGISTER_URL, {
+        method: 'POST',
+        body: params
+      }).then(response => {
+        if (response.ok) {
+          this.setState({
+            email: this.state.reEmail
+          })
+          this.clearRegisterInfo()
+          this.viewPager.setPage(0)
+
+          ToastAndroid.show('Register succeed. You can login now.', ToastAndroid.SHORT)
+        } else {
+          resolveErrorResponse(response)
+        }
+
+        this.setState({
+          registering: false
+        })
+      }).catch(err => {
+        ToastAndroid.show(err, ToastAndroid.SHORT)
+        this.setState({
+          registering: false
+        })
+      })
     }
   }
 
@@ -124,7 +238,11 @@ class LoginPage extends Component {
   renderLoginPage() {
 
     return (
-      <View style={styles.page}>
+      <ScrollView
+        style={styles.page}
+        contentContainerStyle={styles.pageContent}
+        keyboardShouldPersistTaps
+      >
         <TextInput
           placeholder="EMAIL"
           selectionColor={Colors.accent100}
@@ -151,14 +269,18 @@ class LoginPage extends Component {
           buttonTextStyle={{ color: Colors.accent400 }}
           onPress={this.onLogin}
         />
-      </View>
+      </ScrollView>
     )
   }
 
   renderRegisterPage() {
 
     return (
-      <View style={styles.page}>
+      <ScrollView
+        style={styles.page}
+        contentContainerStyle={styles.pageContent}
+        keyboardShouldPersistTaps
+      >
         <TextInput
           placeholder="EMAIL"
           selectionColor={Colors.accent100}
@@ -209,7 +331,7 @@ class LoginPage extends Component {
           <Button
             text={this.state.countDown || "GET CODE"}
             style={{ width: 80 }}
-            disabled={this.state.countDown != 0}
+            disabled={this.state.getCodeDisable}
             onPress={this.sendEmail}
           />
         </View>
@@ -217,8 +339,9 @@ class LoginPage extends Component {
           text="OK"
           style={{ marginTop: 32 }}
           buttonTextStyle={{ color: Colors.accent400 }}
+          onPress={this.onRegister}
         />
-      </View>
+      </ScrollView>
     )
   }
   
@@ -242,8 +365,12 @@ class LoginPage extends Component {
           onPageScroll={this.onPageScroll}
           ref={r => this.viewPager = r}
         >
-          {this.renderLoginPage()}
-          {this.renderRegisterPage()}
+          <View style={styles.pageContainer}>
+            {this.renderLoginPage()}
+          </View>
+          <View style={styles.pageContainer}>
+            {this.renderRegisterPage()}
+          </View>
         </ViewPagerAndroid>
       </View>
     );
@@ -256,13 +383,17 @@ const styles = StyleSheet.create({
   pages: {
     flex: 1
   },
+  pageContainer: {
+    flex: 1
+  },
   page: {
     flex: 1,
-    top: 200,
-    alignItems: 'center',
     padding: 16,
     paddingTop: 36
     // backgroundColor: 'orange'
+  },
+  pageContent: {
+    alignItems: 'center',
   }
 })
 

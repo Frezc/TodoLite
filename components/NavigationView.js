@@ -4,7 +4,8 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableNativeFeedback
+  TouchableNativeFeedback,
+  Image
 } from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
 import { Colors } from '../assets/Theme'
@@ -21,19 +22,14 @@ class NavigationView extends Component {
     onNavItemPress: PropTypes.func,
     userInfo: PropTypes.shape({
       id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
+      nickname: PropTypes.string.isRequired,
       email: PropTypes.string.isRequired,
       avatar: PropTypes.string.isRequired
     })
   }
 
   static defaultProps = {
-    userInfo: {
-      id: -1,
-      name: 'Not login',
-      email: 'Click to login',
-      avatar: ''
-    }
+    
   }
 
   renderHeader() {
@@ -48,11 +44,22 @@ class NavigationView extends Component {
           <View
             style={styles.avatar}
           >
-            <Icon name="md-person" size={32} style={{ color: 'white' }} />
+            {userInfo ?
+              <Image
+                source={{ uri: userInfo.avatar }}
+                style={styles.avatar_img}
+              />
+              :
+              <Icon name="md-person" size={32} style={styles.avatar_icon} />
+            }
           </View>
         </TouchableNativeFeedback>
-        <Text style={styles.name} numberOfLines={1} onPress={onProfilePress}>{userInfo.name}</Text>
-        <Text style={styles.email} numberOfLines={1} onPress={onProfilePress}>{userInfo.email}</Text>
+        <Text style={styles.name} numberOfLines={1} onPress={onProfilePress}>
+          {userInfo ? userInfo.nickname : 'Not Login'}
+        </Text>
+        <Text style={styles.email} numberOfLines={1} onPress={onProfilePress}>
+          {userInfo ? userInfo.email : 'Click to Login'}
+        </Text>
       </View>
     );
   }
@@ -95,8 +102,8 @@ class NavigationView extends Component {
       <View style={styles.sections}>
         {this.renderSection("md-time", 'Schedule', 0)}
         {this.renderSection('md-calendar', 'History', 1)}
-        {userInfo.id != -1 && this.renderDivider()}
-        {userInfo.id != -1 && this.renderSection('md-exit', 'Logout', -1)}
+        {userInfo && this.renderDivider()}
+        {userInfo && this.renderSection('md-exit', 'Logout', -1)}
       </View>
     );
   }
@@ -127,6 +134,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 32,
     borderColor: 'white'
+  },
+  avatar_img: {
+    width: 62,
+    height: 62,
+    borderRadius: 30
+  },
+  avatar_icon: {
+    color: 'white'
   },
   name: {
     marginTop: 28,

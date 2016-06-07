@@ -15,8 +15,8 @@ class MultiLinesSection extends Component {
     iconName: PropTypes.string,
     iconColor: PropTypes.string,
     leftElement: PropTypes.element,
-    text: PropTypes.string.isRequired,
-    secondText: PropTypes.string.isRequired,
+    text: PropTypes.any.isRequired,
+    secondText: PropTypes.any.isRequired,
     onPress: PropTypes.func
   }
 
