@@ -5,8 +5,9 @@ import {
 import { fetchR, constructQuery, resolveErrorResponse } from '../helpers'
 import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, TODO_URL } from '../constants/urls'
 import { APPIDENTITY } from '../constants'
-import { AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT } from '../constants/actionTypes'
+import { AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT, FETCH_SCHEDULE_LOCAL } from '../constants/actionTypes'
 import { setPageLoading } from './view'
+import { saveSchedule } from './data'
 
 /**
  * 身份验证成功
@@ -100,12 +101,15 @@ export function fetchScheduleNetwork(token) {
             todo.contents = JSON.parse(todo.contents)
           })
           dispatch(fetchScheduleSuccess(json))
+          ToastAndroid.show('Refresh successfully.', ToastAndroid.SHORT)
         })
       } else {
         resolveErrorResponse(response)
       }
+      dispatch(setPageLoading('schedulePage', false))
     }).catch(err => {
       ToastAndroid.show(err, ToastAndroid.SHORT)
+      dispatch(setPageLoading('schedulePage', false))
     })
   }
 }
@@ -113,15 +117,15 @@ export function fetchScheduleNetwork(token) {
 /**
  * 尝试获得本地的schedule, 如果没有则调用上面的action
  * @param token
- * @returns {function()}
  */
 export function fetchSchedule(token) {
   return dispatch => {
     return AsyncStorage.getItem('schedule')
       .then(result => {
         if (result) {
+          // ToastAndroid.show(result, ToastAndroid.LONG)
           dispatch({
-            type: FETCH_SCHEDULE_SUCCESS,
+            type: FETCH_SCHEDULE_LOCAL,
             payload: JSON.parse(result)
           })
         } else {
@@ -136,16 +140,13 @@ export function fetchSchedule(token) {
  * @param json
  */
 function fetchScheduleSuccess(json) {
-  return dispatch => {
-    return AsyncStorage.setItem('schedule', JSON.stringify(json))
-      .then(err => {
-        console.log('err ' + err)
-        console.log('json ' + JSON.stringify(json));
-        dispatch({
-          type: FETCH_SCHEDULE_SUCCESS,
-          payload: json
-        })
-      })
+  return (dispatch, getState) => {
+    dispatch({
+      type: FETCH_SCHEDULE_SUCCESS,
+      payload: json
+    })
+
+    return saveSchedule(getState())
   }
 }
 

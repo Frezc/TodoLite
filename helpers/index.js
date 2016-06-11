@@ -22,12 +22,15 @@ export function fetchR(url, params) {
 
   return new Promise((resolve, reject) => {
     const wrappedFetch = (retry) => {
+      // ToastAndroid.show('fetch ' + retry + url, ToastAndroid.SHORT)
       fetch(url, params)
         .then(response => {
           resolve(response);
         })
         .catch(error => {
-          if (retry > 0) {
+          ToastAndroid.show(retry + ' ' + error.message, ToastAndroid.SHORT)
+
+          if (retry > 1) {
             setTimeout(() => {
               wrappedFetch(retry - 1);
             }, params.deltaTime);
@@ -64,19 +67,26 @@ export function resolveValidationError(errMsg) {
 export function resolveErrorResponse(response) {
   switch (response.status) {
     case 430:
-      ToastAndroid.show('Wrong code. Please retry.', ToastAndroid.SHORT)
+      ToastAndroid.show('Wrong code. Please retry.', ToastAndroid.LONG)
       break
     case 431:
-      ToastAndroid.show('Code is expired. Please re-send email.', ToastAndroid.SHORT)
+      ToastAndroid.show('Code is expired. Please re-send email.', ToastAndroid.LONG)
       break
     case 400:
       response.json().then(json => {
-        ToastAndroid.show(resolveValidationError(json.error).join(' '), ToastAndroid.SHORT)
+        ToastAndroid.show(resolveValidationError(json.error).join(' '), ToastAndroid.LONG)
+      })
+      break
+    case 404:
+    case 403:
+    case 401:
+      response.json().then(json => {
+        ToastAndroid.show(json.error, ToastAndroid.LONG)
       })
       break
     default:
       response.text().then(text => {
-        ToastAndroid.show(text, ToastAndroid.SHORT)
+        ToastAndroid.show(text, ToastAndroid.LONG)
       })
   }
 }
@@ -100,7 +110,7 @@ export function constructQuery(params = {}) {
  */
 export function formatDate(date) {
   const year = date.getFullYear()
-  const month = `0${date.getMonth()}`.slice(-2)
+  const month = `0${date.getMonth() + 1}`.slice(-2)
   const day = `0${date.getDate()}`.slice(-2)
   const hour = date.getHours() > 12 ? date.getHours() - 12 : date.getHours()
   const minute = `0${date.getMinutes()}`.slice(-2)

@@ -17,6 +17,7 @@ import { setNavIndex } from '../actions/view'
 import { logout } from '../actions/network'
 import { batchActions } from 'redux-batched-actions'
 import { swipeWithoutGestures } from '../constants/sceneConfigure'
+import DialogCover from '../components/DialogCover'
 
 class Main extends Component {
 
@@ -81,7 +82,12 @@ class Main extends Component {
     const Comp = route.component
     const props = route.props
     return (
-      <Comp navigator={navigator} openDrawer={this.openDrawer} {...props} />
+      <Comp 
+        navigator={navigator}
+        openDrawer={this.openDrawer}
+        dialog={this.dialog}
+        {...props}
+      />
     );
   }
 
@@ -115,6 +121,9 @@ class Main extends Component {
           configureScene={this.configureScene}
           renderScene={this.renderScene}
           ref={r => this.navigator = r}
+        />
+        <DialogCover
+          ref={r => this.dialog = r}
         />
       </DrawerLayoutAndroid>
     );

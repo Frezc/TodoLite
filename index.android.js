@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
-  AppRegistry
+  AppRegistry,
+  UIManager
 } from 'react-native';
 import configureStore from './helpers/configureStore'
 import { Provider } from 'react-redux'
@@ -19,5 +20,7 @@ function TodoLite() {
 }
 
 store.dispatch(appStart())
+
+UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
 
 AppRegistry.registerComponent('TodoLite', () => TodoLite);

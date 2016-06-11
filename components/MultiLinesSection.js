@@ -17,7 +17,8 @@ class MultiLinesSection extends Component {
     leftElement: PropTypes.element,
     text: PropTypes.any.isRequired,
     secondText: PropTypes.any.isRequired,
-    onPress: PropTypes.func
+    onPress: PropTypes.func,
+    onLongPress: PropTypes.func
   }
 
   static defaultProps = {
@@ -37,10 +38,13 @@ class MultiLinesSection extends Component {
   }
   
   render() {
-    const { text, secondText, onPress } = this.props
+    const { text, secondText, onPress, onLongPress } = this.props
 
     return (
-      <TouchableNativeFeedback onPress={onPress}>
+      <TouchableNativeFeedback
+        onPress={onPress}
+        onLongPress={onLongPress}
+      >
         <View style={styles.section}>
           {this.renderLeftItem()}
           <View style={styles.twoLineItems}>

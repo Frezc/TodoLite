@@ -11,6 +11,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { TypeIcon } from '../constants'
 import { statusColors } from '../assets/Theme'
+import { formatDate } from '../helpers'
 
 class TodoSection extends Component {
   
@@ -20,8 +21,8 @@ class TodoSection extends Component {
       status: PropTypes.oneOf(['todo', 'complete', 'layside', 'abandon']).isRequired,
       priority: PropTypes.number.isRequired,
       title: PropTypes.string.isRequired,
-      start_at: PropTypes.string,
-      deadline: PropTypes.string,
+      start_at: PropTypes.number,
+      deadline: PropTypes.number,
       location: PropTypes.string,
       created_at: PropTypes.string
     }).isRequired,
@@ -46,8 +47,8 @@ class TodoSection extends Component {
     const { start_at, location, deadline, created_at } = this.props.data
     let text = []
     location && text.push(`Location: ${location}`)
-    deadline && text.push(`Deadline: ${deadline}`)
-    start_at && text.length < 2 && text.push(`Start at: ${start_at}`)
+    deadline != 0 && text.push(`Deadline: ${formatDate(new Date(deadline * 1000))}`)
+    start_at != 0 && text.length < 2 && text.push(`Start at: ${formatDate(new Date(start_at * 1000))}`)
     if (text.length == 0) {
       text.push(`Created at: ${created_at}`)
     }

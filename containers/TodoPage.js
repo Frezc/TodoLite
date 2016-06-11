@@ -10,8 +10,7 @@ import {
   Picker,
   ToastAndroid,
   BackAndroid,
-  RefreshControl,
-  ProgressBarAndroid
+  RefreshControl
 } from 'react-native';
 import { Colors, statusColors } from '../assets/Theme'
 import Toolbar from '../components/Toolbar'
@@ -21,17 +20,19 @@ import Section from '../components/MultiLinesSection'
 import SingleLineSection from '../components/SingleLineSection'
 import Checkbox from '../components/Checkbox'
 import { TypeIcon, StatusText, TypeText } from '../constants'
-import DialogCover from '../components/DialogCoverM'
+import { TODO_URL } from '../constants/urls'
+import DialogCover from '../components/DialogCover'
 import SelectableList from '../components/SelectableList'
 import SliderWithIndicator from '../components/SliderWithIndicator'
 import DatePicker from '../components/DatePicker'
 import Button from '../components/Button'
-import { setDrawerLockMode } from '../actions/view'
+import { setDrawerLockMode, refreshTodo, addTodo } from '../actions/view'
 import { connect } from 'react-redux';
 import dismissKeyboard from 'dismissKeyboard'
 import Keyboard from '../components/Keyboard'
 import router from '../helpers/router'
-import { formatDate } from '../helpers'
+import { formatDate, fetchR, resolveErrorResponse } from '../helpers'
+import TabBar from '../components/TabBar'
 
 const TypeDialogList = Object.keys(TypeIcon).map(type => {
   return {
@@ -48,9 +49,18 @@ const ModifiedActions = [{
   title: 'Save', iconName: 'save', show: 'always', iconColor: 'white'
 }]
 
+const CreateActions = [{
+  title: 'Done', iconName: 'done', show: 'always', iconColor: 'white'
+}]
+
 class TodoPage extends Component {
 
   static propTypes = {
+    type: PropTypes.oneOf(['create', 'edit', 'show']).isRequired,
+    /**
+     * if type is 'show' and data is specified, this page will show data of this and cannot editable.
+     * this prop is prepare for history.
+     */
     data: PropTypes.shape({
       type: PropTypes.oneOf(Object.keys(TypeIcon)).isRequired,
       status: PropTypes.oneOf(Object.keys(StatusText)).isRequired,
@@ -64,13 +74,19 @@ class TodoPage extends Component {
         content: PropTypes.string.isRequired,
         status: PropTypes.number.isRequired
       })).isRequired
-    }).isRequired,
-    loading: PropTypes.bool,
-    onRequestUpdate: PropTypes.func,
-    onChangeSaved: PropTypes.func
+    }),
+    /**
+     * type: 'edit'
+     * todoId and todos are prepare for editable todos.
+     */
+    todoId: PropTypes.number,
+    todos: PropTypes.object.isRequired,
+    // onRequestUpdate: PropTypes.func,              // (callback)
+    // onChangeSave: PropTypes.func                 // (callback)
   }
 
   static defaultProps = {
+    title: '',
     loading: false
   }
 
@@ -79,21 +95,48 @@ class TodoPage extends Component {
     priority: 5,
     location: '',
     start_at: null,
-    deadline: null,
-    contents: ["是TesttTesttestes车尺寸尺寸是Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是Testtestes车尺寸尺寸是TesttTesttestes车尺"]
+    deadline: null
   }
 
   constructor(props) {
     super(props)
 
-    this.resetState(props)
+    this.state = this.resetStateType()
   }
 
-  resetState = (props = this.props) => {
+  resetStateTypeAndUpdate = () => {
+    const newState = this.resetStateType()
+    this.setState({
+      ...newState
+    })
+  }
+
+  resetStateType = () => {
+    const { type, data, todoId, todos } = this.props
+
+    switch (type) {
+      case 'edit':
+        return this.resetState(todos[todoId])
+      case 'show':
+        return this.resetState(data)
+      case 'create':
+        return this.resetState({
+          title: 'Set your title',
+          type: 'default',
+          status: 'todo',
+          priority: 5,
+          location: '',
+          contents: []
+        })
+    }
+  }
+
+  resetState = (data) => {
     // 深复制, 防止直接修改contents
-    const cloneData = JSON.parse(JSON.stringify(props.data))
+    const cloneData = JSON.parse(JSON.stringify(data))
     this.state = {
       modified: false,
+      loading: false,
       ...cloneData
     }
 
@@ -109,13 +152,47 @@ class TodoPage extends Component {
   /**
    * convert state data to request data
    */
-  getDate = () => {
+  getData = () => {
+    const { title, type, start_at, deadline, priority, location, contents } = this.state
+    return {
+      title,
+      type,
+      start_at: start_at ? start_at.getTime() / 1000 : 0,
+      deadline: deadline ? deadline.getTime() / 1000 : 0,
+      priority,
+      location,
+      contents: JSON.stringify(contents)
+    }
+  }
 
+  generateFormData = () => {
+    const { token } = this.props
+
+    const rd = this.getData()
+    const formData = new FormData()
+    // value不能为null
+    for(const key of Object.keys(rd)) {
+      formData.append(key, rd[key])
+    }
+    formData.append('token', token)
+    return formData
+  }
+
+  getTitle = () => {
+    const { type } = this.props
+    switch (type) {
+      case 'create':
+        return 'Create new todo'
+      case 'edit':
+        return 'Edit todo'
+      case 'show':
+        return 'Todo detail'
+    }
   }
 
   showTitleDialog = () => {
     this.temp.title = this.state.title
-    this.dialog.show({
+    this.props.dialog.show({
       title: 'Title',
       content: (
         <TextInput
@@ -146,7 +223,7 @@ class TodoPage extends Component {
   }
 
   showTypeDialog = () => {
-    this.dialog.show({
+    this.props.dialog.show({
       title: 'Type',
       noPadding: true,
       content: (
@@ -161,7 +238,7 @@ class TodoPage extends Component {
 
   showPriorityDialog = () => {
     this.temp.priority = this.state.priority
-    this.dialog.show({
+    this.props.dialog.show({
       title: 'Priority',
       noPadding: true,
       content: (
@@ -172,6 +249,7 @@ class TodoPage extends Component {
           step={1}
           value={this.temp.priority}
           onSlidingComplete={value => {
+            console.log('onSlidingComplete', typeof value);
             this.temp.priority = value
           }}
         />
@@ -196,7 +274,7 @@ class TodoPage extends Component {
 
   showLocationDialog = () => {
     this.temp.location = this.state.location
-    this.dialog.show({
+    this.props.dialog.show({
       title: 'Location',
       content: (
         <TextInput
@@ -252,7 +330,7 @@ class TodoPage extends Component {
     } else {
       this.temp.start_at = new Date()
     }
-    this.dialog.show({
+    this.props.dialog.show({
       title: 'Start At',
       content: (
         <DatePicker
@@ -287,7 +365,7 @@ class TodoPage extends Component {
     } else {
       this.temp.deadline = new Date()
     }
-    this.dialog.show({
+    this.props.dialog.show({
       title: 'Deadline',
       content: (
         <DatePicker
@@ -342,14 +420,15 @@ class TodoPage extends Component {
   }
 
   showContentMenu = (index) => {
-    this.dialog.show({
+    const { dialog } = this.props
+    dialog.show({
       title: 'Content',
       noPadding: true,
       content: (
         <SelectableList
-          list={[{ text: 'Delete' }]}
+          list={[{ text: 'Delete', iconName: 'delete' }]}
           onSelected={(i) => {
-            this.showConfirmDialog('Delete', 'Are you sure?', () => {
+            dialog.showConfirm('Delete', 'Are you sure?', () => {
               this.state.contents.splice(index, 1)
               this.setState({
                 contents: this.state.contents
@@ -361,33 +440,22 @@ class TodoPage extends Component {
     })
   }
 
-  showConfirmDialog = (title, description, cb) => {
-    this.dialog.show({
-      title: title,
+  showDateMenu = (dateState) => {
+    const { dialog } = this.props
+    dialog.show({
+      title: 'Date menu',
+      noPadding: true,
       content: (
-        <Text>
-          {description}
-        </Text>
-      ),
-      actions: [{
-        text: 'CANCEL',
-        onPress: this.onCloseDialog
-      }, {
-        text: 'OK',
-        onPress: () => {
-          cb && cb()
-          this.onCloseDialog()
-        }
-      }]
-    })
-  }
-
-  showLoadingDialog = (title) => {
-    this.dialog.show({
-      title: title,
-      content: (
-        <ProgressBarAndroid
-          color={Colors.accent100}
+        <SelectableList
+          list={[{ text: 'Delete', iconName: 'delete' }]}
+          onSelected={(i) => {
+            dialog.showConfirm('Delete', 'Are you sure?', () => {
+              this.setState({
+                modified: true,
+                [dateState]: null
+              })
+            })
+          }}
         />
       )
     })
@@ -395,6 +463,10 @@ class TodoPage extends Component {
 
   onComplete = () => {
 
+  }
+  
+  onAbandon = () => {
+    
   }
 
   onLaySide = () => {
@@ -413,7 +485,7 @@ class TodoPage extends Component {
   }
 
   onCloseDialog = () => {
-    this.dialog.close()
+    this.props.dialog.close()
   }
 
   onBackPress = () => {
@@ -422,9 +494,63 @@ class TodoPage extends Component {
     navigator.pop()
   }
 
-  onScroll = (e) => {
-    // console.log(e.nativeEvent.contentOffset.y)
-    // console.log(this.title)
+  onSave = () => {
+    const { todoId, dispatch, dialog } = this.props
+    dialog.showLoading('Saving...')
+
+    // ToastAndroid.show(JSON.stringify(formData), ToastAndroid.LONG)
+    const formData = this.generateFormData()
+    console.log('form data', formData);
+    fetchR(`${TODO_URL}/${todoId}`, {
+      method: 'POST',
+      body: formData
+    }).then(response => {
+      console.log(response);
+      // ToastAndroid.show(JSON.stringify(response), ToastAndroid.LONG)
+      if (response.ok) {
+        response.json().then(json => {
+          // ToastAndroid.show(JSON.stringify(json), ToastAndroid.LONG)
+          console.log('response', json);
+          dispatch(refreshTodo(json))
+          this.resetStateTypeAndUpdate()
+          ToastAndroid.show('Saved successfully', ToastAndroid.SHORT)
+        })
+      } else {
+        resolveErrorResponse(response)
+      }
+
+      this.onCloseDialog()
+    }).catch(err => {
+      console.log(err);
+      ToastAndroid.show(err.message, ToastAndroid.LONG)
+      this.onCloseDialog()
+    })
+  }
+
+  onCreate = () => {
+    const { dispatch, navigator } = this.props
+
+    const formData = this.generateFormData()
+    fetchR(`${TODO_URL}`, {
+      method: 'POST',
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        response.json().then(json => {
+          dispatch(addTodo(json))
+          ToastAndroid.show('Created successfully', ToastAndroid.SHORT)
+          this.onCloseDialog()
+          navigator.pop()
+        })
+      } else {
+        resolveErrorResponse(response)
+        this.onCloseDialog()
+      }
+    }).catch(err => {
+      console.log(err);
+      ToastAndroid.show(err.message, ToastAndroid.LONG)
+      this.onCloseDialog()
+    })
   }
 
   // onKeyboardHide = () => {
@@ -432,27 +558,63 @@ class TodoPage extends Component {
   // }
 
   onActionSelected = index => {
-    switch (index) {
-      case 0:
-        this.showConfirmDialog('Revert', 'This operation is not reversible', () => {
-          const newState = this.resetState()
-          this.setState({
-            ...newState
-          })
-        })
+    const { type, dialog } = this.props
+    switch (type) {
+      case 'create':
+        this.onCreate()
         break
-      case 1:
-        const { onChangeSaved } = this.props
-        this.showLoadingDialog('Saving...')
-        onChangeSaved && onChangeSaved()
-          .then()
+
+      case 'edit':
+        switch (index) {
+          case 0:
+            dialog.showConfirm('Revert', 'This operation is not reversible', () => {
+              this.resetStateTypeAndUpdate()
+            })
+            break
+          case 1:
+            this.onSave()
+            break
+        }
         break
     }
+
+  }
+
+  onRefreshSure = () => {
+    const { todoId, token, dispatch } = this.props
+
+    fetchR(`${TODO_URL}/${todoId}?token=${token}`)
+      .then(response => {
+        if (response.ok) {
+          response.json().then(json => {
+            dispatch(refreshTodo(json))
+            this.resetStateTypeAndUpdate()
+          })
+        } else {
+          resolveErrorResponse(response)
+        }
+
+      }).catch(err => {
+        ToastAndroid.show('Check your connection.', ToastAndroid.SHORT)
+      })
   }
 
   onRefresh = () => {
-    const { onRequestUpdate } = this.props
-    onRequestUpdate && onRequestUpdate()
+    const { dialog } = this.props
+    if (this.state.modified) {
+      dialog.showConfirm('Refresh', 'Your change will be lost.', this.onRefreshSure)
+    } else {
+      this.onRefreshSure()
+    }
+  }
+
+  onContentCheckPress = (index, checked = true) => {
+    const contents = this.state.contents
+    contents[index].status = checked ? 1 : 0
+    this.setState({
+      modified: true,
+      contents
+    })
   }
 
   componentDidMount() {
@@ -469,42 +631,72 @@ class TodoPage extends Component {
     // Keyboard.removeEventListener('keyboardDidHide', this.onKeyboardHide)
   }
 
+  renderRefreshControl = () => {
+    const { type } = this.props
+    const { loading } = this.state
+    if (type != 'create') {
+      return (
+        <RefreshControl
+          colors={[Colors.accent100, Colors.accent200, Colors.accent400]}
+          refreshing={loading}
+          onRefresh={this.onRefresh}
+        />
+      )
+    }
+
+    return null
+  }
+
+  renderToolbarActions = () => {
+    const { type } = this.props
+    const { modified } = this.state
+    switch (type) {
+      case 'create':
+        return modified ? CreateActions : []
+      case 'edit':
+        return modified ? ModifiedActions : []
+    }
+
+    return []
+  }
+
   renderActions() {
     return (
-      <View style={styles.actions}>
-        <Button
-          text="Complete"
-          type="raise"
-          color={statusColors['complete']}
-          style={styles.action}
-          onPress={this.onComplete}
-        />
-        <Button
-          text="Lay Side"
-          type="raise"
-          color={statusColors['layside']}
-          style={styles.action}
-          onPress={this.onLaySide}
-        />
-      </View>
+      <TabBar
+        menuItems={[{
+          title: 'Complete',
+          iconName: 'done-all',
+          color: statusColors.complete
+        }, {
+          title: 'Abandon',
+          iconName: 'clear',
+          color: statusColors.abandon
+        }, {
+          title: 'Lay side',
+          iconName: 'block',
+          color: statusColors.layside
+        }]}
+        onItemPress={(index) => {
+          switch (index) {
+            case 0:
+              return this.onComplete()
+            case 1:
+              return this.onAbandon()
+            case 2:
+              return this.onLaySide()
+          }
+        }}
+      />
     )
   }
 
   renderContent() {
-    const { loading } = this.props
     const { title, type, status, priority, start_at, deadline, end_at, location, contents } = this.state
 
     return (
       <ScrollView
         style={styles.fillParent}
-        onScroll={this.onScroll}
-        refreshControl={
-          <RefreshControl
-            colors={[Colors.accent100, Colors.accent200, Colors.accent400]}
-            refreshing={loading}
-            onRefresh={this.onRefresh}
-          />
-        }
+        refreshControl={this.renderRefreshControl()}
       >
         <Section
           text="Title"
@@ -534,12 +726,14 @@ class TodoPage extends Component {
           secondText={start_at ? formatDate(start_at) : 'Not set'}
           iconName="access-time"
           onPress={this.setStartAt}
+          onLongPress={() => this.showDateMenu('start_at')}
         />
         <Section
           text="Deadline"
           secondText={deadline ? formatDate(deadline) : 'Not set'}
           iconName="alarm"
           onPress={this.setDeadline}
+          onLongPress={() => this.showDateMenu('deadline')}
         />
         {end_at &&
           <Section
@@ -548,15 +742,13 @@ class TodoPage extends Component {
             iconName="alarm-on"
           />
         }
-        {location && <Divider style={styles.divider} />}
-        {location &&
-          <Section
-            text="Location"
-            secondText={location}
-            iconName="location-on"
-            onPress={this.showLocationDialog}
-          />
-        }
+        <Divider style={styles.divider} />
+        <Section
+          text="Location"
+          secondText={location || 'Not set'}
+          iconName="location-on"
+          onPress={this.showLocationDialog}
+        />
         <Divider style={styles.divider} />
         <Subheader
           text="Contents"
@@ -571,6 +763,7 @@ class TodoPage extends Component {
                 style={styles.leftEl}
                 color={Colors.accent100}
                 checked={item.status == 1}
+                onPress={() => this.onContentCheckPress(index, item.status != 1)}
               />
             }
             onPress={() => this.showContentEditor(item.content, index)}
@@ -590,24 +783,19 @@ class TodoPage extends Component {
   }
 
   render() {
+    const { type } = this.props
+
     return (
       <View style={styles.fillParent}>
         <Toolbar
           navIconName="arrow-back"
-          title=""
+          title={this.getTitle()}
           onIconClicked={this.onBackPress}
-          actions={this.state.modified ? ModifiedActions : []}
+          actions={this.renderToolbarActions()}
           onActionSelected={this.onActionSelected}
         />
         {this.renderContent()}
-        {this.renderActions()}
-        <DialogCover
-          actions={[]}
-          onRequestClose={this.onCloseDialog}
-          ref={r => this.dialog = r}
-        >
-          <Text>123</Text>
-        </DialogCover>
+        {type == 'edit' && this.renderActions()}
       </View>
     )
   }
@@ -639,7 +827,11 @@ const styles = StyleSheet.create({
 })
 
 function select (state, ownProps) {
-  return ownProps
+  return {
+    todos: state.todos,
+    token: state.auth.token,
+    ...ownProps
+  }
 }
 
 export default connect(select)(TodoPage)

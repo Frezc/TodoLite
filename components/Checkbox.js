@@ -2,7 +2,8 @@ import React, { Component, PropTypes } from 'react';
 import {
   StyleSheet,
   View,
-  TouchableNativeFeedback
+  TouchableNativeFeedback,
+  LayoutAnimation
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
@@ -20,16 +21,19 @@ class Checkbox extends Component {
     size: 20
   }
 
+  state = {
+    opacity: this.props.checked ? 1 : 0,
+    size: 20
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.checked !== this.props.checked) {
+      LayoutAnimation.configureNext(CheckScaleSpring)
+    }
+  }
 
   render() {
     const { checked, size, style, onPress, color } = this.props;
-
-    const iconParams = {
-      name: checked ? 'check-box' : "check-box-outline-blank",
-      size: size
-    }
-
-    if (checked) iconParams.color = color;
 
     return (
       <TouchableNativeFeedback
@@ -37,7 +41,8 @@ class Checkbox extends Component {
         onPress={onPress}
       >
         <View style={style}>
-          <Icon {...iconParams} />
+          <Icon name="check-box-outline-blank" size={size} />
+          {checked && <Icon style={styles.ab} name="check-box" size={size} color={color} />}
         </View>
       </TouchableNativeFeedback>
     )
@@ -45,7 +50,24 @@ class Checkbox extends Component {
 }
 
 const styles = StyleSheet.create({
-
+  ab: {
+    position: 'absolute',
+    top: 0,
+    left: 0
+  }
 })
+
+const CheckScaleSpring = {
+  duration: 400,
+  create: {
+    type: LayoutAnimation.Types.spring,
+    property: LayoutAnimation.Properties.scaleXY,
+    springDamping: 0.7,
+  },
+  update: {
+    type: LayoutAnimation.Types.spring,
+    springDamping: 0.7,
+  },
+};
 
 export default Checkbox

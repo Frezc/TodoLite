@@ -6,23 +6,31 @@ import {
   ScrollView,
   TouchableNativeFeedback,
   ListView,
-  RefreshControl
+  RefreshControl,
+  ToastAndroid
 } from 'react-native';
 import { connect } from 'react-redux';
-import { generateRandomStringArray } from '../helpers'
+import { generateRandomStringArray, fetchR, resolveErrorResponse } from '../helpers'
 import { Colors } from '../assets/Theme'
 import Toolbar from '../components/Toolbar'
 import TodoSection from '../components/TodoSection'
 import router from '../helpers/router'
 import NeedAuth from '../components/NeedAuth'
 import { fetchScheduleNetwork } from '../actions/network'
+import { TODO_URL } from '../constants/urls'
+import ListFilter from '../components/ListFilter'
+
+const actions = [{
+  title: 'Add Todo', iconName: 'add', show: 'always', iconColor: 'white'
+}]
 
 class SchedulePage extends Component {
 
   static propsTypes = {
     token: PropTypes.string,
     loading: PropTypes.bool,
-    data: PropTypes.arrayOf(PropTypes.object)
+    data: PropTypes.arrayOf(PropTypes.number),
+    todos: PropTypes.object.isRequired
   }
 
   static defaultProps = {
@@ -30,13 +38,24 @@ class SchedulePage extends Component {
     data: []
   }
 
-  data = generateRandomStringArray(100, '一点事情字数补丁字数补丁一点事情字数补丁字数补丁一点事情字数补丁字数补丁')
-
   constructor(props) {
     super(props)
     this.state = {
-      dataSource: new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2}).cloneWithRows(props.data)
+      dataSource: new ListView.DataSource({
+        rowHasChanged: this.rowHasChanged
+      }).cloneWithRows(this.generateData(props))
     }
+  }
+
+  generateData = (props = this.props) => {
+    const { data, todos } = props
+    return data.map(todoId => {
+      return todos[todoId]
+    })
+  }
+
+  rowHasChanged = (r1, r2) => {
+    return r1 !== r2
   }
 
   onRefresh = () => {
@@ -45,24 +64,32 @@ class SchedulePage extends Component {
     dispatch(fetchScheduleNetwork(token))
   }
 
-  componentWillReceiveProps(nextProps) {
-    this.setState({
-      dataSource: this.state.dataSource.cloneWithRows(nextProps.data)
+  onActionSelected = index => {
+    this.props.navigator.push({
+      ...router.todo,
+      props: {
+        type: 'create'
+      }
     })
   }
 
-  renderSection = (rowData, sectionID, rowID, highlightRow) => {
+  componentWillReceiveProps(nextProps) {
+    this.setState({
+      dataSource: this.state.dataSource.cloneWithRows(this.generateData(nextProps))
+    })
+  }
+
+  renderSection = (todo, sectionID, rowID, highlightRow) => {
+    const { token, dispatch } = this.props
     return (
       <TodoSection
-        data={rowData}
+        data={todo}
         onPress={() => {
           this.props.navigator.push({
             ...router.todo,
             props: {
-              data: rowData,
-              onChangeSaved: data => {
-              
-              }
+              todoId: todo.id,
+              type: 'edit'
             }
           })
         }}
@@ -77,6 +104,23 @@ class SchedulePage extends Component {
       <View style={{ backgroundColor: 'darkgray', height: 1, marginLeft: 70, opacity: 0.34 }} key={rowID} />
     )
   }
+
+  renderHeader = () => {
+    return (
+      <ListFilter>
+        <ListFilter.SearchFilter
+          text="Search"
+        />
+        <ListFilter.PickerGroup
+          filters={[{
+            text: 'All'
+          }, {
+            text: 'Desc by Updated at'
+          }]}
+        />
+      </ListFilter>
+    )
+  }
   
   render() {
     const { openDrawer, token, loading, navigator } = this.props
@@ -88,6 +132,8 @@ class SchedulePage extends Component {
           navIconName="menu"
           title={'Schedule'}
           onIconClicked={openDrawer}
+          actions={actions}
+          onActionSelected={this.onActionSelected}
         />
         {token ?
           <ListView
@@ -101,7 +147,7 @@ class SchedulePage extends Component {
                 onRefresh={this.onRefresh}
               />
             }
-            renderHeader={() => <Text>Header</Text>}
+            renderHeader={this.renderHeader}
             renderRow={this.renderSection}
           />
           :
@@ -123,6 +169,7 @@ function select(state, ownProps) {
     token: state.auth.token,
     loading: state.view.schedulePage.loading,
     data: state.view.schedulePage.data,
+    todos: state.todos,
     ...ownProps
   }
 }

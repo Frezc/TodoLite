@@ -6,13 +6,15 @@ import {
   Animated,
   Dimensions,
   ScrollView,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Modal,
+  BackAndroid,
+  ProgressBarAndroid
 } from 'react-native'
 import Button from './Button'
+import Keyboard from './Keyboard'
+import { Colors } from '../assets/Theme'
 
-/**
- * this is departed
- */
 class DialogCover extends Component {
 
   // initial state
@@ -37,10 +39,10 @@ class DialogCover extends Component {
     this.state = {
       visible: false,
       title: props.title,
-      fadeAnim: new Animated.Value(0),
       content: props.children,
       actions: props.actions,
-      noPadding: props.noPadding
+      noPadding: props.noPadding,
+      dialogTop: new Animated.Value(0)
     }
   }
 
@@ -53,37 +55,98 @@ class DialogCover extends Component {
       visible: true,
       title: null,
       actions: [],
-      noPadding: false
+      noPadding: false,
+      onRequestClose: null
     }, config))
+    this.state.dialogTop.setValue(0)
+  }
 
-    Animated.timing(
-      this.state.fadeAnim,
+  /**
+   * Show dialog with a progress bar
+   * @param title
+   */
+  showLoading = (title) => {
+    this.show({
+      title: title,
+      content: (
+        <ProgressBarAndroid
+          color={Colors.accent100}
+        />
+      )
+    })
+  }
+
+  /**
+   * show a confirm dialog
+   * @param title title of dialog
+   * @param description content of dialog
+   * @param cb callback when press ok
+   */
+  showConfirm = (title, description, cb) => {
+    this.show({
+      title: title,
+      content: (
+        <Text>
+          {description}
+        </Text>
+      ),
+      actions: [{
+        text: 'CANCEL',
+        onPress: this.close
+      }, {
+        text: 'OK',
+        onPress: () => {
+          cb && cb()
+          this.close()
+        }
+      }]
+    })
+  }
+
+  close() {
+
+    this.setState({
+      visible: false
+    })
+  }
+
+  fitKeyboard = (isfit) => {
+    Animated.spring(
+      this.state.dialogTop,
       {
-        toValue: 1,
-        duration: 300
+        toValue: isfit ? -120 : 0
       }
     ).start()
   }
 
-  close() {
-    Animated.timing(
-      this.state.fadeAnim,
-      {
-        toValue: 0,
-        duration: 300
-      }
-    ).start(({finished}) => {
-      if (finished) {
-        this.setState({
-          visible: false
-        })
-      }
-    })
+  onKeyboardHide = () => {
+    this.fitKeyboard(false)    
+  }
+
+  onKeyboardShow = () => {
+    this.fitKeyboard(true)
+  }
+
+  onRequestClose = () => {
+    if (this.state.onRequestClose) return this.state.onRequestClose()
+    else if (this.props.onRequestClose) return this.props.onRequestClose()
+    else {
+      this.close()
+    }
+  }
+
+  componentDidMount() {
+    Keyboard.addEventListener('keyboardDidHide', this.onKeyboardHide)
+    Keyboard.addEventListener('keyboardDidShow', this.onKeyboardShow)
+  }
+
+  componentWillUnmount() {
+    Keyboard.removeEventListener('keyboardDidHide', this.onKeyboardHide)
+    Keyboard.removeEventListener('keyboardDidShow', this.onKeyboardShow)
   }
 
   renderDialog() {
-    const { title, content, actions, noPadding } = this.state;
-    const { onRequestClose } = this.props
+    const { title, content, actions, noPadding } = this.state
     const { height, width } = Dimensions.get('window')
 
     const showActions = actions && actions.length > 0
@@ -93,46 +156,41 @@ class DialogCover extends Component {
     }
 
     return (
-      <TouchableWithoutFeedback onPress={onRequestClose}>
-        <Animated.View style={[styles.root, { height: height - 24, width: width, opacity: this.state.fadeAnim }]}>
-          <TouchableWithoutFeedback>
-            <View style={styles.dialog}>
-              {title && <Text style={styles.title}>{title}</Text>}
-              <View style={contentStyle}>
-                {content}
-              </View>
-              {showActions &&
-              <View style={styles.actions}>
-                {actions.map((action, i) =>
-                  <Button
-                    key={i}
-                    text={action.text}
-                    onPress={action.onPress}
-                    style={styles.actionPadding}
-                  />
-                )}
-              </View>
-              }
-            </View>
-          </TouchableWithoutFeedback>
-        </Animated.View>
-      </TouchableWithoutFeedback>
-    )
-  }
-
-  renderEmpty() {
-
-    return (
-      <View style={styles.empty} />
+      <Modal
+        onRequestClose={this.onRequestClose}
+        visible={this.state.visible}
+        transparent
+      >
+        <TouchableWithoutFeedback onPress={this.onRequestClose}>
+          <View style={[styles.root, { height: height - 24, width: width }]}>
+            <TouchableWithoutFeedback>
+              <Animated.View style={[styles.dialog, { top: this.state.dialogTop }]}>
+                {title && <Text style={styles.title}>{title}</Text>}
+                <View style={contentStyle}>
+                  {content}
+                </View>
+                {showActions &&
+                  <View style={styles.actions}>
+                    {actions.map((action, i) =>
+                      <Button
+                        key={i}
+                        text={action.text}
+                        onPress={action.onPress}
+                        style={styles.actionPadding}
+                      />
+                    )}
+                  </View>
+                }
+              </Animated.View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     )
   }
 
   render() {
-    if (this.state.visible) {
-      return this.renderDialog()
-    } else {
-      return this.renderEmpty()
-    }
+    return this.renderDialog()
   }
 }
 
@@ -143,7 +201,7 @@ const styles = StyleSheet.create({
     elevation: 2,        // fix android elevation bug
     left: 0,
     top: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.56)',
+    backgroundColor: 'rgba(0,0,0,0.54)',
     justifyContent: 'center',
     alignItems: 'center'
   },
