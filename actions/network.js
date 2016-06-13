@@ -7,7 +7,7 @@ import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, TODO_URL } from '../constants/ur
 import { APPIDENTITY } from '../constants'
 import { AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT, FETCH_SCHEDULE_LOCAL } from '../constants/actionTypes'
 import { setPageLoading } from './view'
-import { saveSchedule } from './data'
+import { saveSchedule, saveScheduleAndTodos } from './data'
 
 /**
  * 身份验证成功
@@ -35,26 +35,6 @@ export function authFailed(error) {
   }
 }
 
-/**
- * 在app开始时进行的action
- */
-export function appStart() {
-  return dispatch => {
-    return AsyncStorage.getItem('auth')
-      .then(result => {
-        if (result) {
-          const auth = JSON.parse(result)
-          // dispatch(refreshToken(auth.token))
-          dispatch({
-            type: AUTH_SUCCESS,
-            payload: auth
-          })
-
-          dispatch(fetchSchedule(auth.token))
-        }
-      })
-  }
-}
 
 /**
  * 因为token是不会过期的 所以暂时不使用刷新
@@ -120,13 +100,16 @@ export function fetchScheduleNetwork(token) {
  */
 export function fetchSchedule(token) {
   return dispatch => {
-    return AsyncStorage.getItem('schedule')
+    return Promise.all([AsyncStorage.getItem('schedule'), AsyncStorage.getItem('todos')])
       .then(result => {
-        if (result) {
+        if (result[0] && result[1]) {
           // ToastAndroid.show(result, ToastAndroid.LONG)
           dispatch({
             type: FETCH_SCHEDULE_LOCAL,
-            payload: JSON.parse(result)
+            payload: {
+              schedulePage: JSON.parse(result[0]),
+              todos: JSON.parse(result[1])
+            }
           })
         } else {
           dispatch(fetchScheduleNetwork(token))
@@ -146,7 +129,7 @@ function fetchScheduleSuccess(json) {
       payload: json
     })
 
-    return saveSchedule(getState())
+    return saveScheduleAndTodos(getState())
   }
 }
 
@@ -160,7 +143,7 @@ export function logout(token) {
         dispatch({
           type: LOGOUT
         })
-        return AsyncStorage.removeItem('auth')
+        return AsyncStorage.clear()
           .then(err => {
             ToastAndroid.show('logout: ' + err, ToastAndroid.SHORT)
           })

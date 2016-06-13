@@ -7,7 +7,7 @@ import configureStore from './helpers/configureStore'
 import { Provider } from 'react-redux'
 import Main from './containers'
 import './components/Keyboard'
-import { appStart } from './actions/network'
+import { appStart } from './actions/view'
 
 const store = configureStore()
 

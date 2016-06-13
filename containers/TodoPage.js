@@ -19,14 +19,15 @@ import Divider from '../components/Divider'
 import Section from '../components/MultiLinesSection'
 import SingleLineSection from '../components/SingleLineSection'
 import Checkbox from '../components/Checkbox'
-import { TypeIcon, StatusText, TypeText } from '../constants'
+import { TypeIcon, StatusText, TypeText, StatusIcon } from '../constants'
 import { TODO_URL } from '../constants/urls'
 import DialogCover from '../components/DialogCover'
 import SelectableList from '../components/SelectableList'
 import SliderWithIndicator from '../components/SliderWithIndicator'
 import DatePicker from '../components/DatePicker'
 import Button from '../components/Button'
-import { setDrawerLockMode, refreshTodo, addTodo } from '../actions/view'
+import { setDrawerLockMode, refreshTodo, addTodo, showDialog, 
+  showLoadingDialog, showConfirmDialog, closeDialog } from '../actions/view'
 import { connect } from 'react-redux';
 import dismissKeyboard from 'dismissKeyboard'
 import Keyboard from '../components/Keyboard'
@@ -191,8 +192,9 @@ class TodoPage extends Component {
   }
 
   showTitleDialog = () => {
+    const { dispatch } = this.props
     this.temp.title = this.state.title
-    this.props.dialog.show({
+    dispatch(showDialog({
       title: 'Title',
       content: (
         <TextInput
@@ -204,6 +206,7 @@ class TodoPage extends Component {
           onChangeText={text => this.temp.title = text}
         />
       ),
+      onRequestClose: this.onCloseDialog,
       actions: [{
         text: 'CANCEL',
         onPress: this.onCloseDialog
@@ -219,11 +222,11 @@ class TodoPage extends Component {
           this.onCloseDialog()
         }
       }]
-    })
+    }))
   }
 
   showTypeDialog = () => {
-    this.props.dialog.show({
+    this.props.dispatch(showDialog({
       title: 'Type',
       noPadding: true,
       content: (
@@ -232,13 +235,15 @@ class TodoPage extends Component {
           list={TypeDialogList}
           onSelected={this.onSelectType}
         />
-      )
-    })
+      ),
+      onRequestClose: this.onCloseDialog
+    }))
   }
 
   showPriorityDialog = () => {
+    // bug
     this.temp.priority = this.state.priority
-    this.props.dialog.show({
+    this.props.dispatch(showDialog({
       title: 'Priority',
       noPadding: true,
       content: (
@@ -254,6 +259,7 @@ class TodoPage extends Component {
           }}
         />
       ),
+      onRequestClose: this.onCloseDialog,
       actions: [{
         text: 'CANCEL',
         onPress: this.onCloseDialog
@@ -269,12 +275,12 @@ class TodoPage extends Component {
           this.onCloseDialog()
         }
       }]
-    })
+    }))
   }
 
   showLocationDialog = () => {
     this.temp.location = this.state.location
-    this.props.dialog.show({
+    this.props.dispatch(showDialog({
       title: 'Location',
       content: (
         <TextInput
@@ -286,6 +292,7 @@ class TodoPage extends Component {
           onChangeText={text => this.temp.location = text}
         />
       ),
+      onRequestClose: this.onCloseDialog,
       actions: [{
         text: 'CANCEL',
         onPress: this.onCloseDialog
@@ -301,7 +308,7 @@ class TodoPage extends Component {
           this.onCloseDialog()
         }
       }]
-    })
+    }))
   }
 
   showContentEditor = (text, index) => {
@@ -330,7 +337,7 @@ class TodoPage extends Component {
     } else {
       this.temp.start_at = new Date()
     }
-    this.props.dialog.show({
+    this.props.dispatch(showDialog({
       title: 'Start At',
       content: (
         <DatePicker
@@ -340,6 +347,7 @@ class TodoPage extends Component {
           }}
         />
       ),
+      onRequestClose: this.onCloseDialog,
       actions: [{
         text: 'CANCEL',
         onPress: this.onCloseDialog
@@ -356,7 +364,7 @@ class TodoPage extends Component {
           this.onCloseDialog()
         }
       }]
-    })
+    }))
   }
 
   setDeadline = () => {
@@ -365,7 +373,7 @@ class TodoPage extends Component {
     } else {
       this.temp.deadline = new Date()
     }
-    this.props.dialog.show({
+    this.props.dispatch(showDialog({
       title: 'Deadline',
       content: (
         <DatePicker
@@ -390,7 +398,7 @@ class TodoPage extends Component {
           this.onCloseDialog()
         }
       }]
-    })
+    }))
   }
 
   showAddContentPage = () => {
@@ -420,45 +428,53 @@ class TodoPage extends Component {
   }
 
   showContentMenu = (index) => {
-    const { dialog } = this.props
-    dialog.show({
+    const { dispatch } = this.props
+    dispatch(showDialog({
       title: 'Content',
       noPadding: true,
+      onRequestClose: this.onCloseDialog,
       content: (
         <SelectableList
           list={[{ text: 'Delete', iconName: 'delete' }]}
           onSelected={(i) => {
-            dialog.showConfirm('Delete', 'Are you sure?', () => {
-              this.state.contents.splice(index, 1)
-              this.setState({
-                contents: this.state.contents
-              })
-            })
+            dispatch(showConfirmDialog('Delete', 'Are you sure?', (result) => {
+              if (result === 'OK') {
+                this.state.contents.splice(index, 1)
+                this.setState({
+                  contents: this.state.contents
+                })
+              }
+              this.onCloseDialog()
+            }))
           }}
         />
       )
-    })
+    }))
   }
 
   showDateMenu = (dateState) => {
-    const { dialog } = this.props
-    dialog.show({
+    const { dispatch } = this.props
+    dispatch(showDialog({
       title: 'Date menu',
       noPadding: true,
+      onRequestClose: this.onCloseDialog,
       content: (
         <SelectableList
           list={[{ text: 'Delete', iconName: 'delete' }]}
           onSelected={(i) => {
-            dialog.showConfirm('Delete', 'Are you sure?', () => {
-              this.setState({
-                modified: true,
-                [dateState]: null
-              })
-            })
+            dispatch(showConfirmDialog('Delete', 'Are you sure?', (result) => {
+              if (result === 'OK') {
+                this.setState({
+                  modified: true,
+                  [dateState]: null
+                })
+              }
+              this.onCloseDialog()
+            }))
           }}
         />
       )
-    })
+    }))
   }
 
   onComplete = () => {
@@ -485,7 +501,7 @@ class TodoPage extends Component {
   }
 
   onCloseDialog = () => {
-    this.props.dialog.close()
+    this.props.dispatch(closeDialog())
   }
 
   onBackPress = () => {
@@ -495,8 +511,8 @@ class TodoPage extends Component {
   }
 
   onSave = () => {
-    const { todoId, dispatch, dialog } = this.props
-    dialog.showLoading('Saving...')
+    const { todoId, dispatch } = this.props
+    dispatch(showLoadingDialog('Saving...'))
 
     // ToastAndroid.show(JSON.stringify(formData), ToastAndroid.LONG)
     const formData = this.generateFormData()
@@ -558,7 +574,7 @@ class TodoPage extends Component {
   // }
 
   onActionSelected = index => {
-    const { type, dialog } = this.props
+    const { type, dispatch } = this.props
     switch (type) {
       case 'create':
         this.onCreate()
@@ -567,9 +583,14 @@ class TodoPage extends Component {
       case 'edit':
         switch (index) {
           case 0:
-            dialog.showConfirm('Revert', 'This operation is not reversible', () => {
-              this.resetStateTypeAndUpdate()
-            })
+            dispatch(showConfirmDialog('Revert', 'This operation is not reversible', (result) => {
+              switch (result) {
+                case 'OK':
+                  this.resetStateTypeAndUpdate()
+                  break
+              }
+              this.onCloseDialog()
+            }))
             break
           case 1:
             this.onSave()
@@ -665,15 +686,15 @@ class TodoPage extends Component {
       <TabBar
         menuItems={[{
           title: 'Complete',
-          iconName: 'done-all',
+          iconName: StatusIcon['complete'],
           color: statusColors.complete
         }, {
           title: 'Abandon',
-          iconName: 'clear',
+          iconName: StatusIcon['abandon'],
           color: statusColors.abandon
         }, {
           title: 'Lay side',
-          iconName: 'block',
+          iconName: StatusIcon['layside'],
           color: statusColors.layside
         }]}
         onItemPress={(index) => {

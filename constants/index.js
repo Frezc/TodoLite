@@ -23,6 +23,13 @@ export const TypeText = {
   outOfDoor: 'Go out'
 }
 
+export const StatusIcon = {
+  todo: 'alarm',
+  complete: 'done-all',
+  layside: 'block',
+  abandon: 'clear'
+}
+
 export const StatusText = {
   todo: 'To do',
   complete: 'Complete',

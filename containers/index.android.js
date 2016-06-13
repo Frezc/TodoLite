@@ -92,7 +92,7 @@ class Main extends Component {
   }
 
   render() {
-    const { selectedIndex, lockMode, user } = this.props
+    const { selectedIndex, lockMode, user, dialog } = this.props
 
     var navigationView = (
       <NavigationView
@@ -124,7 +124,10 @@ class Main extends Component {
         />
         <DialogCover
           ref={r => this.dialog = r}
-        />
+          {...dialog}
+        >
+          {dialog.content}
+        </DialogCover>
       </DrawerLayoutAndroid>
     );
   }
@@ -139,7 +142,8 @@ function select(state) {
     selectedIndex: state.view.navigationViewSelectedIndex,
     lockMode: state.view.drawerLockMode,
     user: state.auth.user,
-    token: state.auth.token
+    token: state.auth.token,
+    dialog: state.view.dialog
   }
 }
 

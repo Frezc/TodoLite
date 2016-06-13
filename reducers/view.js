@@ -1,7 +1,8 @@
 import { combineReducers } from 'redux'
 import {
   SET_DRAWER_LOCKMODE, SET_NAV_INDEX, FETCH_SCHEDULE_SUCCESS,
-  SET_PAGE_LOADING, FETCH_SCHEDULE_LOCAL, ADD_TODO
+  SET_PAGE_LOADING, FETCH_SCHEDULE_LOCAL, ADD_TODO, SHOW_DIALOG,
+  CLOSE_DIALOG, SET_STATUS_FUILTER, SET_TYPE_FILTER
 } from '../constants/actionTypes'
 
 function navigationViewSelectedIndex(state = 0, action) {
@@ -23,13 +24,15 @@ function drawerLockMode(state = 'unlocked', action) {
 
 const defaultSchedule = {
   loading: false,
-  data: []
+  data: [],
+  statusFilter: '',
+  typeFilter: ''
 }
 
 function schedulePage(state = defaultSchedule, action) {
   switch (action.type) {
     case SET_PAGE_LOADING:
-      if (action.page == 'schedulePage') {
+      if (action.page === 'schedulePage') {
         return Object.assign({}, state, {
           loading: action.loading
         })
@@ -40,16 +43,12 @@ function schedulePage(state = defaultSchedule, action) {
       const data = action.payload.todolist.map(todo => {
         return todo.id
       })
-      return {
-        loading: false,
+      return Object.assign({}, state, {
         data: data
-      }
+      }) 
     
     case FETCH_SCHEDULE_LOCAL:
-      return {
-        loading: false,
-        data: action.payload.data
-      }
+      return Object.assign({}, state, action.payload.schedulePage)
 
     case ADD_TODO:
       const d = state.data.slice()
@@ -57,6 +56,37 @@ function schedulePage(state = defaultSchedule, action) {
       return Object.assign({}, state, {
         data: d
       })
+
+    case SET_STATUS_FUILTER:
+      if (action.page === 'schedulePage') {
+        return Object.assign({}, state, {
+          statusFilter: action.payload
+        })
+      }
+      break
+
+    case SET_TYPE_FILTER:
+      if (action.page === 'schedulePage') {
+        return Object.assign({}, state, {
+          typeFilter: action.payload
+        })
+      }
+      break
+  }
+
+  return state
+}
+
+function dialog(state = {}, action) {
+  switch (action.type) {
+    case SHOW_DIALOG:
+      return Object.assign({
+        visible: true
+      }, action.payload)
+    case CLOSE_DIALOG:
+      return {
+        visible: false
+      }
   }
 
   return state
@@ -65,7 +95,8 @@ function schedulePage(state = defaultSchedule, action) {
 const view = combineReducers({
   navigationViewSelectedIndex,
   drawerLockMode,
-  schedulePage
+  schedulePage,
+  dialog
 })
 
 export default view

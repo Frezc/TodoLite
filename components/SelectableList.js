@@ -18,7 +18,7 @@ class SelectableList extends Component {
       iconName: PropTypes.string,
       text: PropTypes.string.isRequired
     })).isRequired,
-    onSelected: PropTypes.func
+    onSelected: PropTypes.func     // (index, text)
   }
 
   render() {

@@ -19,6 +19,7 @@ class DialogCover extends Component {
 
   // initial state
   static propTypes = {
+    visible: PropTypes.bool,
     children: PropTypes.element,
     title: PropTypes.string,
     actions: PropTypes.arrayOf(PropTypes.shape({
@@ -30,24 +31,25 @@ class DialogCover extends Component {
   }
 
   static defaultProps = {
-    noPadding: false
+    noPadding: false,
+    visible: false
   }
 
   constructor(props) {
     super(props)
 
     this.state = {
-      visible: false,
-      title: props.title,
-      content: props.children,
-      actions: props.actions,
-      noPadding: props.noPadding,
+      // visible: false,
+      // title: props.title,
+      // content: props.children,
+      // actions: props.actions,
+      // noPadding: props.noPadding,
       dialogTop: new Animated.Value(0)
     }
   }
 
   /**
-   *
+   * not use
    * @param config same as props
    */
   show(config) {
@@ -62,6 +64,7 @@ class DialogCover extends Component {
   }
 
   /**
+   * not
    * Show dialog with a progress bar
    * @param title
    */
@@ -77,6 +80,7 @@ class DialogCover extends Component {
   }
 
   /**
+   * not
    * show a confirm dialog
    * @param title title of dialog
    * @param description content of dialog
@@ -128,11 +132,15 @@ class DialogCover extends Component {
   }
 
   onRequestClose = () => {
+    const { onRequestClose } = this.props
+    onRequestClose && onRequestClose()
+    /*
     if (this.state.onRequestClose) return this.state.onRequestClose()
     else if (this.props.onRequestClose) return this.props.onRequestClose()
     else {
       this.close()
     }
+    */
   }
 
   componentDidMount() {
@@ -146,19 +154,19 @@ class DialogCover extends Component {
   }
 
   renderDialog() {
-    const { title, content, actions, noPadding } = this.state
+    const { visible, title, actions, noPadding, children } = this.props
     const { height, width } = Dimensions.get('window')
 
     const showActions = actions && actions.length > 0
     const contentStyle = {
       marginHorizontal: noPadding ? 0 : 24,
-      marginBottom: noPadding ? 0 : showActions ? (content.type === ScrollView ? 0 : 22) : 22
+      marginBottom: noPadding ? 0 : showActions ? (children && children.type === ScrollView ? 0 : 22) : 22
     }
 
     return (
       <Modal
         onRequestClose={this.onRequestClose}
-        visible={this.state.visible}
+        visible={visible}
         transparent
       >
         <TouchableWithoutFeedback onPress={this.onRequestClose}>
@@ -167,7 +175,7 @@ class DialogCover extends Component {
               <Animated.View style={[styles.dialog, { top: this.state.dialogTop }]}>
                 {title && <Text style={styles.title}>{title}</Text>}
                 <View style={contentStyle}>
-                  {content}
+                  {children}
                 </View>
                 {showActions &&
                   <View style={styles.actions}>

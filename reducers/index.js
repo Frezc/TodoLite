@@ -5,7 +5,18 @@
  *     drawerLockMode: ('unlocked', 'locked-closed', 'locked-open'),
  *     schedulePage: {
  *       loading: bool,
- *       data: [todo_id, ..]
+ *       data: [todo_id, ..],
+ *       statusFilter: string,
+ *       typeFilter: string
+ *     },
+ *     dialog: {
+ *       // see DialogCover 's propTypes
+ *       visible: bool,
+ *       content: element,
+ *       title,
+ *       actions,
+ *       onRequestClose,
+ *       noPadding
  *     }
  *   },
  *   auth: {
@@ -38,9 +49,6 @@
  *       updated_at
  *     }
  *   }
- *   
- *   // model
- *   to_do: 
  * }
  */
 
