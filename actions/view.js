@@ -1,13 +1,15 @@
 import React from 'react';
 import {
   Text,
+  TextInput,
   ProgressBarAndroid,
   AsyncStorage
 } from 'react-native'
 import {
   SET_NAV_INDEX, SET_DRAWER_LOCKMODE, SET_PAGE_LOADING, 
   UPDATE_TODO, ADD_TODO, SHOW_DIALOG, CLOSE_DIALOG,
-  SET_STATUS_FUILTER, SET_TYPE_FILTER, AUTH_SUCCESS
+  SET_STATUS_FUILTER, SET_TYPE_FILTER, AUTH_SUCCESS,
+  SET_SEARCH_TEXT, SET_YEAR
 } from '../constants/actionTypes'
 import { fetchSchedule } from './network'
 import { saveSchedule, saveTodos, saveScheduleAndTodos } from './data'
@@ -62,10 +64,10 @@ export function setPageLoading(page, isLoading = true) {
 }
 
 export function refreshTodo(todo) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     todo.contents = JSON.parse(todo.contents)
     dispatch(updateLocalTodo(todo))
-    return saveTodos(getState())
+    return dispatch(saveTodos())
       .then(err => {
 
       })
@@ -80,10 +82,10 @@ export function updateLocalTodo(todo) {
 }
 
 export function addTodo(todo) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     todo.contents = JSON.parse(todo.contents)
     dispatch(addLocalTodo(todo))
-    return saveScheduleAndTodos(getState())
+    return dispatch(saveScheduleAndTodos())
   }
 }
 
@@ -151,23 +153,32 @@ export function closeDialog() {
 }
 
 export function setStatusFilter(page, status) {
-  return (dispatch, getState) => {
-    dispatch({
-      type: SET_STATUS_FUILTER,
-      page,
-      payload: status
-    })
-    return saveSchedule(getState())
+  return {
+    type: SET_STATUS_FUILTER,
+    page,
+    payload: status
   }
 }
 
 export function setTypeFilter(page, type) {
-  return (dispatch, getState) => {
-    dispatch({
-      type: SET_TYPE_FILTER,
-      page,
-      payload: type
-    })
-    return saveSchedule(getState())
+  return {
+    type: SET_TYPE_FILTER,
+    page,
+    payload: type
+  }
+}
+
+export function setSearchText(page, text) {
+  return {
+    type: SET_SEARCH_TEXT,
+    page,
+    payload: text
+  }
+}
+
+export function setYear(year) {
+  return {
+    type: SET_YEAR,
+    payload: year
   }
 }

@@ -3,11 +3,14 @@ import {
   ToastAndroid
 } from 'react-native'
 import { fetchR, constructQuery, resolveErrorResponse } from '../helpers'
-import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, TODO_URL } from '../constants/urls'
+import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, HISTORY_URL } from '../constants/urls'
 import { APPIDENTITY } from '../constants'
-import { AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT, FETCH_SCHEDULE_LOCAL } from '../constants/actionTypes'
+import {
+  AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT,
+  FETCH_SCHEDULE_LOCAL, FETCH_HISTORY_SUCCESS, APPEND_HISTORY_SUCCESS
+} from '../constants/actionTypes'
 import { setPageLoading } from './view'
-import { saveSchedule, saveScheduleAndTodos } from './data'
+import { saveScheduleAndTodos, saveHistory } from './data'
 
 /**
  * 身份验证成功
@@ -73,7 +76,7 @@ export function fetchScheduleNetwork(token) {
   return dispatch => {
     dispatch(setPageLoading('schedulePage'))
     fetchTodoList(token, {
-      status: 'todo'
+      status: 'todo,layside'
     }).then(response => {
       if (response.ok) {
         response.json().then(json => {
@@ -104,10 +107,12 @@ export function fetchSchedule(token) {
       .then(result => {
         if (result[0] && result[1]) {
           // ToastAndroid.show(result, ToastAndroid.LONG)
+          const schedulePage = JSON.parse(result[0])
+          schedulePage.loading = false
           dispatch({
             type: FETCH_SCHEDULE_LOCAL,
             payload: {
-              schedulePage: JSON.parse(result[0]),
+              schedulePage,
               todos: JSON.parse(result[1])
             }
           })
@@ -123,13 +128,13 @@ export function fetchSchedule(token) {
  * @param json
  */
 function fetchScheduleSuccess(json) {
-  return (dispatch, getState) => {
+  return (dispatch) => {
     dispatch({
       type: FETCH_SCHEDULE_SUCCESS,
       payload: json
     })
 
-    return saveScheduleAndTodos(getState())
+    return dispatch(saveScheduleAndTodos())
   }
 }
 
@@ -150,5 +155,44 @@ export function logout(token) {
       }).catch(err => {
         ToastAndroid.show(err, ToastAndroid.SHORT)
       })
+  }
+}
+
+export function fetchHistoryNetwork(token, year, params) {
+  return dispatch => {
+    const fetchParams = Object.assign({ offset: 0, limit: 50 }, params)
+    const query = constructQuery(fetchParams)
+    dispatch(setPageLoading('historyPage'))
+    console.log('fetch', `${HISTORY_URL}?token=${token}&year=${year}&${query}`);
+    return fetchR(`${HISTORY_URL}?token=${token}&year=${year}&${query}`)
+      .then(response => {
+        if (response.ok) {
+          response.json().then(json => {
+            console.log('response', json);
+            json.todolist.map(todo => {
+              todo.contents = JSON.parse(todo.contents)
+            })
+            dispatch(fetchHistorySuccess(json, fetchParams.offset))
+          })
+        } else {
+          resolveErrorResponse(response)
+        }
+        dispatch(setPageLoading('historyPage', false))
+      }).catch(err => {
+        ToastAndroid.show(err.message, ToastAndroid.SHORT)
+        dispatch(setPageLoading('historyPage', false))
+      })
+  }
+}
+
+export function fetchHistorySuccess(json, offset) {
+  return (dispatch) => {
+    dispatch({
+      type: FETCH_HISTORY_SUCCESS,
+      offset,
+      payload: json
+    })
+
+    return dispatch(saveHistory())
   }
 }

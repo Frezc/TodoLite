@@ -13,12 +13,14 @@ class Checkbox extends Component {
     checked: PropTypes.bool,
     size: PropTypes.number,
     onPress: PropTypes.func,
-    color: PropTypes.string
+    color: PropTypes.string,
+    disabled: PropTypes.bool
   }
 
   static defaultProps = {
     checked: false,
-    size: 20
+    size: 20,
+    disabled: false
   }
 
   state = {
@@ -27,18 +29,23 @@ class Checkbox extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.checked !== this.props.checked) {
+    if (!nextProps.disabled && nextProps.checked !== this.props.checked) {
       LayoutAnimation.configureNext(CheckScaleSpring)
     }
   }
 
   render() {
-    const { checked, size, style, onPress, color } = this.props;
+    const { checked, size, style, onPress, color, disabled } = this.props;
 
+    let touchProps
+    if (disabled) touchProps = {}
+    else touchProps = {
+      onPress
+    }
     return (
       <TouchableNativeFeedback
         background={TouchableNativeFeedback.SelectableBackgroundBorderless()}
-        onPress={onPress}
+        {...touchProps}
       >
         <View style={style}>
           <Icon name="check-box-outline-blank" size={size} />

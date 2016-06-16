@@ -29,10 +29,6 @@ class TodoSection extends Component {
     onPress: PropTypes.func
   }
 
-  static defaultProps = {
-
-  }
-
   getIconColor = () => {
     const { status, priority } = this.props.data
 
@@ -53,6 +49,10 @@ class TodoSection extends Component {
       text.push(`Created at: ${created_at}`)
     }
     return text.join(', ')
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.data !== nextProps.data
   }
   
   render() {

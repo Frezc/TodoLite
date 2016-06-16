@@ -36,3 +36,19 @@ export const StatusText = {
   layside: 'Lay side',
   abandon: 'Abandon'
 }
+
+/**
+ * 生成用于HistoryPage的YearPicker里的年份数据
+ * 从 2016 到 今年
+ */
+const years = []
+const toYear = new Date().getFullYear()
+for (let i = 2016; i <= toYear; i++) {
+  years.push(i)
+}
+export const yearPickerItems = years.map(year => {
+  return {
+    label: String(year),
+    value: year
+  }
+})

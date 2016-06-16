@@ -1,27 +1,22 @@
 import React, { Component, PropTypes } from 'react';
 import {
-  StyleSheet,
   View,
   Text,
-  ScrollView,
-  TouchableNativeFeedback,
   ListView,
   RefreshControl,
-  ToastAndroid,
-  TextInput
+  ToastAndroid
 } from 'react-native';
 import { connect } from 'react-redux';
-import { generateRandomStringArray, fetchR, resolveErrorResponse } from '../helpers'
 import { Colors } from '../assets/Theme'
 import Toolbar from '../components/Toolbar'
 import TodoSection from '../components/TodoSection'
 import router from '../helpers/router'
 import NeedAuth from '../components/NeedAuth'
 import { fetchScheduleNetwork } from '../actions/network'
-import { showDialog, closeDialog, setStatusFilter, setTypeFilter } from '../actions/view'
-import ListFilter from '../components/ListFilter'
-import SelectableList from '../components/SelectableList'
+import { showDialog, closeDialog, setStatusFilter, setTypeFilter, setSearchText } from '../actions/view'
+import { saveSchedule } from '../actions/data'
 import { StatusText, TypeText } from '../constants'
+import ListFilterContainer from './ListFilterContainer'
 
 const actions = [{
   title: 'Add Todo', iconName: 'add', show: 'always', iconColor: 'white'
@@ -53,14 +48,16 @@ class SchedulePage extends Component {
     data: PropTypes.arrayOf(PropTypes.number),
     todos: PropTypes.object.isRequired,
     statusFilter: PropTypes.string,
-    typeFilter: PropTypes.string
+    typeFilter: PropTypes.string,
+    searchText: PropTypes.string
   }
 
   static defaultProps = {
     loading: false,
     data: [],
     statusFilter: '',
-    typeFilter: ''
+    typeFilter: '',
+    searchText: ''
   }
 
   /* 在这里面是无法调用下面的变量的
@@ -72,10 +69,6 @@ class SchedulePage extends Component {
   }
   */
 
-  temp = {
-    searchText: ''
-  }
-
   constructor(props) {
     super(props)
 
@@ -83,15 +76,12 @@ class SchedulePage extends Component {
       dataSource: new ListView.DataSource({
         rowHasChanged: this.rowHasChanged
       }).cloneWithRows(this.generateData(props)),
-      searchText: ''  //todo
     }
   }
 
   generateData = (props = this.props) => {
-    const { data, todos } = props
-    const { searchText } = this.state || {}
-    const { statusFilter, typeFilter } = props
-    const sortedData = data.slice().filter(todoId => {
+    const { data, todos, statusFilter, typeFilter, searchText } = props
+    const sortedData = data.filter(todoId => {
       if (statusFilter && todos[todoId].status != statusFilter) {
         return false
       }
@@ -126,80 +116,6 @@ class SchedulePage extends Component {
     return r1 !== r2
   }
 
-  showSearchTextDialog = () => {
-    this.temp.searchText = this.state.searchText
-    this.props.dispatch(showDialog({
-      title: 'Search..',
-      content: (
-        <TextInput
-          selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
-          autoFocus
-          defaultValue={this.temp.searchText}
-          maxLength={30}
-          onChangeText={text => this.temp.searchText = text}
-        />
-      ),
-      onRequestClose: this.onCloseDialog,
-      actions: [{
-        text: 'CANCEL',
-        onPress: this.onCloseDialog
-      }, {
-        text: 'CLEAR',
-        onPress: () => {
-          if (this.state.searchText) {
-            this.setState({
-              searchText: ''
-            })
-          }
-          this.onCloseDialog()
-        }
-      }, {
-        text: 'OK',
-        onPress: () => {
-          if (this.state.searchText != this.temp.searchText) {
-            this.setState({
-              searchText: this.temp.searchText
-            })
-          }
-          this.onCloseDialog()
-        }
-      }]
-    }))
-  }
-
-  showStatusDialog = () => {
-    const { statusFilter } = this.props
-    this.props.dispatch(showDialog({
-      title: 'Status',
-      noPadding: true,
-      content: (
-        <SelectableList
-          selectedText={StatusText[statusFilter] || 'All'}
-          list={statusList}
-          onSelected={this.onSelectStatus}
-        />
-      ),
-      onRequestClose: this.onCloseDialog
-    }))
-  }
-
-  showTypeDialog = () => {
-    const { typeFilter } = this.props
-    this.props.dispatch(showDialog({
-      title: 'Type',
-      noPadding: true,
-      content: (
-        <SelectableList
-          selectedText={TypeText[typeFilter] || 'All'}
-          list={typeList}
-          onSelected={this.onSelectType}
-        />
-      ),
-      onRequestClose: this.onCloseDialog
-    }))
-  }
-
   onRefresh = () => {
     const { dispatch, token } = this.props
 
@@ -219,20 +135,29 @@ class SchedulePage extends Component {
     this.props.dispatch(closeDialog())
   }
 
+  onSetSearchText = text => {
+    const { dispatch } = this.props
+    dispatch(setSearchText('schedulePage', text))
+    dispatch(saveSchedule())
+  }
+
   onSelectStatus = (index, text) => {
     const { dispatch } = this.props
     switch (index) {
       case 0:
         // all
         dispatch(setStatusFilter('schedulePage', ''))
+        dispatch(saveSchedule())
         break
       case 1:
         // to do
         dispatch(setStatusFilter('schedulePage', 'todo'))
+        dispatch(saveSchedule())
         break
       case 2:
         // lay side
         dispatch(setStatusFilter('schedulePage', 'layside'))
+        dispatch(saveSchedule())
         break
     }
     this.onCloseDialog()
@@ -242,8 +167,10 @@ class SchedulePage extends Component {
     const { dispatch } = this.props
     if (index == 0) {
       dispatch(setTypeFilter('schedulePage', ''))
+      dispatch(saveSchedule())
     } else {
       dispatch(setTypeFilter('schedulePage', types[index - 1]))
+      dispatch(saveSchedule())
     }
 
     this.onCloseDialog()
@@ -256,7 +183,6 @@ class SchedulePage extends Component {
   }
 
   renderSection = (todo, sectionID, rowID, highlightRow) => {
-    const { token, dispatch } = this.props
     return (
       <TodoSection
         data={todo}
@@ -282,25 +208,19 @@ class SchedulePage extends Component {
   }
 
   renderHeader = () => {
-    const { searchText } = this.state
-    const { statusFilter, typeFilter } = this.props
-
+    const { statusFilter, typeFilter, searchText, dispatch } = this.props
+    
     return (
-      <ListFilter>
-        <ListFilter.SearchFilter
-          text={searchText || 'Search'}
-          onPress={this.showSearchTextDialog}
-        />
-        <ListFilter.PickerGroup
-          filters={[{
-            text: StatusText[statusFilter] || 'All',
-            onPress: this.showStatusDialog
-          }, {
-            text: TypeText[typeFilter] || 'All',
-            onPress: this.showTypeDialog
-          }]}
-        />
-      </ListFilter>
+      <ListFilterContainer
+        statusFilter={statusFilter}
+        typeFilter={typeFilter}
+        searchText={searchText}
+        statusList={statusList}
+        dispatch={dispatch}
+        onSelectStatus={this.onSelectStatus}
+        onSelectType={this.onSelectType}
+        onSetSearchText={this.onSetSearchText}
+      />
     )
   }
   
@@ -341,10 +261,6 @@ class SchedulePage extends Component {
     )
   }
 }
-
-const styles = StyleSheet.create({
-
-})
 
 function select(state, ownProps) {
   return Object.assign({

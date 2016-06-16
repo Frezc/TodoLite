@@ -18,11 +18,13 @@ class MultiLinesSection extends Component {
     text: PropTypes.any.isRequired,
     secondText: PropTypes.any.isRequired,
     onPress: PropTypes.func,
-    onLongPress: PropTypes.func
+    onLongPress: PropTypes.func,
+    disabled: PropTypes.bool
   }
 
   static defaultProps = {
-    iconColor: Colors.accent100
+    iconColor: Colors.accent100,
+    disabled: false
   }
 
   renderLeftItem() {
@@ -38,12 +40,18 @@ class MultiLinesSection extends Component {
   }
   
   render() {
-    const { text, secondText, onPress, onLongPress } = this.props
+    const { text, secondText, onPress, onLongPress, disabled } = this.props
 
+    // 不是用TouchableNativeFeedback的disabled属性，保留ripple
+    let touchProps
+    if (disabled) touchProps = {}
+    else touchProps = {
+      onPress,
+      onLongPress
+    }
     return (
       <TouchableNativeFeedback
-        onPress={onPress}
-        onLongPress={onLongPress}
+        {...touchProps}
       >
         <View style={styles.section}>
           {this.renderLeftItem()}

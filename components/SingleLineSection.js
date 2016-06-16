@@ -17,11 +17,13 @@ class SingleLineSection extends Component {
     leftElement: PropTypes.element,
     text: PropTypes.any.isRequired,
     onPress: PropTypes.func,
-    onLongPress: PropTypes.func
+    onLongPress: PropTypes.func,
+    disabled: PropTypes.bool
   }
 
   static defaultProps = {
-    iconColor: Colors.accent100
+    iconColor: Colors.accent100,
+    disabled: false
   }
 
   renderLeftItem() {
@@ -37,10 +39,16 @@ class SingleLineSection extends Component {
   }
 
   render() {
-    const { text, onPress, onLongPress } = this.props
+    const { text, onPress, onLongPress, disabled } = this.props
 
+    let touchProps
+    if (disabled) touchProps = {}
+    else touchProps = {
+      onPress,
+      onLongPress
+    }
     return (
-      <TouchableNativeFeedback onPress={onPress} onLongPress={onLongPress}>
+      <TouchableNativeFeedback {...touchProps} >
         <View style={styles.section}>
           {this.renderLeftItem()}
           <View style={styles.singleLineItems}>

@@ -105,7 +105,7 @@ export function constructQuery(params = {}) {
 
 /**
  * format date to string
- * todo
+ * todo: 优化 ，可以显示xx时间前
  * @param date
  */
 export function formatDate(date) {
@@ -117,4 +117,14 @@ export function formatDate(date) {
   const ampm = date.getHours() > 12 ? 'pm' : 'am'
 
   return `${year}-${month}-${day} ${hour}:${minute} ${ampm}`
+}
+
+/**
+ * This function will return a new array after insert.
+ * @param originArr origin array
+ * @param insertArr the array to insert
+ * @param offset the inserting position of orgin array
+ */
+export function arrayInsert(originArr, insertArr, offset) {
+  return originArr.slice(0, offset).concat(insertArr).concat(originArr.slice(offset))
 }

@@ -3,28 +3,46 @@
  */
 import { AsyncStorage } from 'react-native'
 
-export function saveSchedule(rootState) {
-  const sp = rootState.view.schedulePage
-  return AsyncStorage.setItem('schedule', JSON.stringify(sp))
-    .then(err => {
-      console.log('err ' + err)
-      return err
-    })
+export function saveSchedule() {
+  return (dispatch, getState) => {
+    const sp = getState().view.schedulePage
+    return AsyncStorage.setItem('schedule', JSON.stringify(sp))
+      .then(err => {
+        console.log('err ' + err)
+        return err
+      })
+  }
 }
 
-export function saveTodos(rootState) {
-  const todos = rootState.todos
-  return AsyncStorage.setItem('todos', JSON.stringify(todos))
-    .then(err => {
-      console.log('err ' + err)
-      return err
-    })
+export function saveTodos() {
+  return (dispatch, getState) => {
+    const todos = getState().todos
+    return AsyncStorage.setItem('todos', JSON.stringify(todos))
+      .then(err => {
+        console.log('err ' + err)
+        return err
+      })
+  }
 }
 
-export function saveScheduleAndTodos(rootState) {
-  return Promise.all([saveSchedule(rootState), saveTodos(rootState)])
-    .then(err => {
-      console.log('err ' + err)
-      return err
-    })
+export function saveScheduleAndTodos() {
+  return (dispatch) => {
+    return Promise.all([dispatch(saveSchedule()), dispatch(saveTodos())])
+      .then(err => {
+        console.log('err ' + err)
+        return err
+      })
+  }
+
+}
+
+export function saveHistory() {
+  return (dispatch, getState) => {
+    const hp = getState().view.historyPage
+    return AsyncStorage.setItem('history', JSON.stringify(hp))
+      .then(err => {
+        console.log('err ' + err)
+        return err
+      })
+  }
 }

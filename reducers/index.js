@@ -7,7 +7,17 @@
  *       loading: bool,
  *       data: [todo_id, ..],
  *       statusFilter: string,
- *       typeFilter: string
+ *       typeFilter: string,
+ *       searchText: string
+ *     },
+ *     historyPage: {
+ *       loading: bool,
+ *       all: number,       // total of data
+ *       data: [..todos],   // immutable data
+ *       statusFilter: string,
+ *       typeFilter: string,
+ *       searchText: string,
+ *       year: number     
  *     },
  *     dialog: {
  *       // see DialogCover 's propTypes

@@ -505,9 +505,18 @@ class TodoPage extends Component {
   }
 
   onBackPress = () => {
-    const { navigator } = this.props
+    const { navigator, dispatch, type } = this.props
 
-    navigator.pop()
+    if (this.state.modified) {
+      dispatch(showConfirmDialog('Exit', 'Your unsaved data will be lost.', result => {
+        if (result === 'OK') {
+          navigator.pop()
+        }
+        this.onCloseDialog()
+      }))
+    } else {
+      navigator.pop()
+    }
   }
 
   onSave = () => {
@@ -713,6 +722,7 @@ class TodoPage extends Component {
 
   renderContent() {
     const { title, type, status, priority, start_at, deadline, end_at, location, contents } = this.state
+    const pType = this.props.type
 
     return (
       <ScrollView
@@ -724,6 +734,7 @@ class TodoPage extends Component {
           secondText={title}
           ref={r => this.title = r}
           onPress={this.showTitleDialog}
+          disabled={pType === 'show'}
         />
         <Divider style={styles.divider} />
         <Section
@@ -731,6 +742,7 @@ class TodoPage extends Component {
           secondText={TypeText[type]}
           iconName={TypeIcon[type]}
           onPress={this.showTypeDialog}
+          disabled={pType === 'show'}
         />
         <Section
           text="Status"
@@ -740,6 +752,7 @@ class TodoPage extends Component {
           text="Priority"
           secondText={priority}
           onPress={this.showPriorityDialog}
+          disabled={pType === 'show'}
         />
         <Divider style={styles.divider} />
         <Section
@@ -748,6 +761,7 @@ class TodoPage extends Component {
           iconName="access-time"
           onPress={this.setStartAt}
           onLongPress={() => this.showDateMenu('start_at')}
+          disabled={pType === 'show'}
         />
         <Section
           text="Deadline"
@@ -755,6 +769,7 @@ class TodoPage extends Component {
           iconName="alarm"
           onPress={this.setDeadline}
           onLongPress={() => this.showDateMenu('deadline')}
+          disabled={pType === 'show'}
         />
         {end_at &&
           <Section
@@ -769,6 +784,7 @@ class TodoPage extends Component {
           secondText={location || 'Not set'}
           iconName="location-on"
           onPress={this.showLocationDialog}
+          disabled={pType === 'show'}
         />
         <Divider style={styles.divider} />
         <Subheader
@@ -785,13 +801,15 @@ class TodoPage extends Component {
                 color={Colors.accent100}
                 checked={item.status == 1}
                 onPress={() => this.onContentCheckPress(index, item.status != 1)}
+                disabled={pType === 'show'}
               />
             }
             onPress={() => this.showContentEditor(item.content, index)}
             onLongPress={() => this.showContentMenu(index)}
+            disabled={pType === 'show'}
           />
         )}
-        {contents.length < 10 &&
+        {contents.length < 10 && pType !== 'show' &&
           <SingleLineSection
             key={99}
             text="Add Content"

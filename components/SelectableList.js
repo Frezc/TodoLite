@@ -18,11 +18,16 @@ class SelectableList extends Component {
       iconName: PropTypes.string,
       text: PropTypes.string.isRequired
     })).isRequired,
+    noRepeat: PropTypes.bool,      // if true, onSelected won't be called when select selected item.
     onSelected: PropTypes.func     // (index, text)
+  }
+  
+  static defaultProps = {
+    noRepeat: false
   }
 
   render() {
-    const { style, selectedIndex, selectedText, list, onSelected } = this.props
+    const { style, selectedIndex, selectedText, list, onSelected, noRepeat } = this.props
 
     return (
       <View style={[styles.root, style]}>
@@ -34,7 +39,7 @@ class SelectableList extends Component {
             <TouchableNativeFeedback
               key={index}
               background={TouchableNativeFeedback.SelectableBackground()}
-              onPress={() => onSelected(index, item.text)}
+              onPress={() => noRepeat && isSelected || onSelected(index, item.text)}
             >
               <View style={styles.section}>
                 {item.iconName &&

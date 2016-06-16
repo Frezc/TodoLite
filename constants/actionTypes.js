@@ -9,9 +9,12 @@ export const FETCH_SCHEDULE_LOCAL = 'FETCH_SCHEDULE_LOCAL'
 export const LOGOUT = 'LOGOUT'
 export const UPDATE_TODO = 'UPDATE_TODO'
 export const ADD_TODO = 'ADD_TODO'
+export const FETCH_HISTORY_SUCCESS = 'FETCH_HISTORY_SUCCESS'
 
 export const SHOW_DIALOG = 'SHOW_DIALOG'
 export const CLOSE_DIALOG = 'CLOSE_DIALOG'
 
 export const SET_STATUS_FUILTER = 'SET_STATUS_FUILTER'
 export const SET_TYPE_FILTER = 'SET_TYPE_FILTER' 
+export const SET_SEARCH_TEXT = 'SET_SEARCH_TEXT'
+export const SET_YEAR = 'SET_YEAR'
