@@ -3,7 +3,8 @@ import {
   SET_DRAWER_LOCKMODE, SET_NAV_INDEX, FETCH_SCHEDULE_SUCCESS,
   SET_PAGE_LOADING, FETCH_SCHEDULE_LOCAL, ADD_TODO, SHOW_DIALOG,
   CLOSE_DIALOG, SET_STATUS_FUILTER, SET_TYPE_FILTER, SET_SEARCH_TEXT,
-  FETCH_HISTORY_SUCCESS, SET_YEAR
+  FETCH_HISTORY_SUCCESS, SET_YEAR, FETCH_HISTORY_LOCAL, LOGOUT,
+  PAGE_READY
 } from '../constants/actionTypes'
 import { arrayInsert } from '../helpers'
 
@@ -25,6 +26,7 @@ function drawerLockMode(state = 'unlocked', action) {
 }
 
 const defaultSchedule = {
+  ready: false,
   loading: false,
   data: [],
   statusFilter: '',
@@ -83,12 +85,24 @@ function schedulePage(state = defaultSchedule, action) {
         })
       }
       break
+    
+    case PAGE_READY:
+      if (action.payload === 'schedulePage') {
+        return Object.assign({}, state, {
+          ready: true
+        }) 
+      }
+      break
+
+    case LOGOUT:
+      return defaultSchedule
   }
 
   return state
 }
 
 const defaultHistory = {
+  ready: false,
   loading: false,
   all: -1,
   data: [],
@@ -143,6 +157,20 @@ function historyPage(state = defaultHistory, action) {
       return Object.assign({}, state, {
         year: action.payload
       })
+
+    case FETCH_HISTORY_LOCAL:
+      return Object.assign({}, state, action.payload)
+
+    case PAGE_READY:
+      if (action.payload === 'historyPage') {
+        return Object.assign({}, state, {
+          ready: true
+        })
+      }
+      break
+    
+    case LOGOUT:
+      return defaultHistory
   }
   return state
 }

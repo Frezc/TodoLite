@@ -317,6 +317,7 @@ class TodoPage extends Component {
       props: {
         title: 'Content',
         defaultValue: text,
+        editable: this.props.type !== 'show',
         editComplete: (newText) => {
           if (text != newText) {
             const newContents = this.state.contents
@@ -428,6 +429,7 @@ class TodoPage extends Component {
   }
 
   showContentMenu = (index) => {
+    if (this.props.type === 'show') return;
     const { dispatch } = this.props
     dispatch(showDialog({
       title: 'Content',
@@ -555,6 +557,7 @@ class TodoPage extends Component {
   onCreate = () => {
     const { dispatch, navigator } = this.props
 
+    dispatch(showLoadingDialog('Creating'))
     const formData = this.generateFormData()
     fetchR(`${TODO_URL}`, {
       method: 'POST',
@@ -806,7 +809,6 @@ class TodoPage extends Component {
             }
             onPress={() => this.showContentEditor(item.content, index)}
             onLongPress={() => this.showContentMenu(index)}
-            disabled={pType === 'show'}
           />
         )}
         {contents.length < 10 && pType !== 'show' &&

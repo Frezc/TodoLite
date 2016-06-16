@@ -6,6 +6,7 @@ import { AsyncStorage } from 'react-native'
 export function saveSchedule() {
   return (dispatch, getState) => {
     const sp = getState().view.schedulePage
+    sp.ready = true
     return AsyncStorage.setItem('schedule', JSON.stringify(sp))
       .then(err => {
         console.log('err ' + err)
@@ -39,6 +40,7 @@ export function saveScheduleAndTodos() {
 export function saveHistory() {
   return (dispatch, getState) => {
     const hp = getState().view.historyPage
+    hp.ready = true
     return AsyncStorage.setItem('history', JSON.stringify(hp))
       .then(err => {
         console.log('err ' + err)

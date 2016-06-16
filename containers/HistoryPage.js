@@ -16,9 +16,9 @@ import router from '../helpers/router'
 import NeedAuth from '../components/NeedAuth'
 import { 
   showDialog, closeDialog, setStatusFilter, setTypeFilter, setSearchText,
-  setYear
+  setYear, pageReady
 } from '../actions/view'
-import { fetchHistoryNetwork } from '../actions/network'
+import { fetchHistoryNetwork, fetchHistoryLocal } from '../actions/network'
 import { StatusText, TypeText, yearPickerItems } from '../constants'
 import ListFilterContainer from './ListFilterContainer'
 import Picker from '../components/UncPicker'
@@ -197,8 +197,11 @@ class HistoryPage extends Component {
   }
 
   componentDidMount() {
-    const { all } = this.props
-    if (all < 0) {
+    const { all, token, ready, dispatch } = this.props
+    if (!ready) {
+      dispatch(fetchHistoryLocal())
+      dispatch(pageReady('historyPage'))
+    } else if (all < 0 && token) {
       this.onRefresh()
     }
   }

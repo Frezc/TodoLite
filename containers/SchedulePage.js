@@ -12,8 +12,11 @@ import Toolbar from '../components/Toolbar'
 import TodoSection from '../components/TodoSection'
 import router from '../helpers/router'
 import NeedAuth from '../components/NeedAuth'
-import { fetchScheduleNetwork } from '../actions/network'
-import { showDialog, closeDialog, setStatusFilter, setTypeFilter, setSearchText } from '../actions/view'
+import { fetchScheduleNetwork, fetchSchedule } from '../actions/network'
+import { 
+  showDialog, closeDialog, setStatusFilter, setTypeFilter, setSearchText,
+  pageReady
+} from '../actions/view'
 import { saveSchedule } from '../actions/data'
 import { StatusText, TypeText } from '../constants'
 import ListFilterContainer from './ListFilterContainer'
@@ -180,6 +183,14 @@ class SchedulePage extends Component {
     this.setState({
       dataSource: this.state.dataSource.cloneWithRows(this.generateData(nextProps))
     })
+  }
+
+  componentDidMount() {
+    const { ready, dispatch, token } = this.props
+    if (!ready) {
+      dispatch(fetchSchedule(token))
+      dispatch(pageReady('schedulePage'))
+    }
   }
 
   renderSection = (todo, sectionID, rowID, highlightRow) => {

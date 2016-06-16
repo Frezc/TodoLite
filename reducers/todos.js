@@ -2,7 +2,7 @@
  * Created by Frezc on 2016/6/8.
  */
 
-import { FETCH_SCHEDULE_SUCCESS, FETCH_SCHEDULE_LOCAL, UPDATE_TODO, ADD_TODO } from '../constants/actionTypes'
+import { FETCH_SCHEDULE_SUCCESS, FETCH_SCHEDULE_LOCAL, UPDATE_TODO, ADD_TODO, LOGOUT } from '../constants/actionTypes'
 
 function todos(state = {}, action) {
   switch (action.type) {
@@ -21,7 +21,8 @@ function todos(state = {}, action) {
       return Object.assign({}, state, {
         [action.payload.id]: action.payload
       })
-
+    case LOGOUT:
+      return {}
   }
   return state
 }

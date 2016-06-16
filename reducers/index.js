@@ -4,6 +4,7 @@
  *     navigationViewSelectedIndex: int, navigation view 菜单选择索引,
  *     drawerLockMode: ('unlocked', 'locked-closed', 'locked-open'),
  *     schedulePage: {
+ *       ready: bool,         // 该页面数据是否已经加载
  *       loading: bool,
  *       data: [todo_id, ..],
  *       statusFilter: string,
@@ -11,6 +12,7 @@
  *       searchText: string
  *     },
  *     historyPage: {
+ *       ready: bool,        // 同上  
  *       loading: bool,
  *       all: number,       // total of data
  *       data: [..todos],   // immutable data

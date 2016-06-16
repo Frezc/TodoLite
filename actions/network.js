@@ -7,7 +7,8 @@ import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, HISTORY_URL } from '../constants
 import { APPIDENTITY } from '../constants'
 import {
   AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT,
-  FETCH_SCHEDULE_LOCAL, FETCH_HISTORY_SUCCESS, APPEND_HISTORY_SUCCESS
+  FETCH_SCHEDULE_LOCAL, FETCH_HISTORY_SUCCESS, APPEND_HISTORY_SUCCESS,
+  FETCH_HISTORY_LOCAL
 } from '../constants/actionTypes'
 import { setPageLoading } from './view'
 import { saveScheduleAndTodos, saveHistory } from './data'
@@ -194,5 +195,21 @@ export function fetchHistorySuccess(json, offset) {
     })
 
     return dispatch(saveHistory())
+  }
+}
+
+export function fetchHistoryLocal() {
+  return dispatch => {
+    return AsyncStorage.getItem('history')
+      .then(result => {
+        if (result) {
+          const history = JSON.parse(result)
+          history.loading = false
+          dispatch({
+            type: FETCH_HISTORY_LOCAL,
+            payload: history
+          })
+        }
+      })
   }
 }

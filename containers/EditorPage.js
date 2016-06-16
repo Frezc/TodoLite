@@ -21,11 +21,13 @@ class EditorPage extends Component {
   static propTypes = {
     title: PropTypes.string,
     defaultValue: PropTypes.string,
-    editComplete: PropTypes.func
+    editComplete: PropTypes.func,
+    editable: PropTypes.bool
   }
 
   static defaultProps = {
-    title: ''
+    title: '',
+    editable: true
   }
 
   constructor(props) {
@@ -67,7 +69,7 @@ class EditorPage extends Component {
   }
 
   render() {
-    const { title } = this.props
+    const { title, editable } = this.props
     const { value, actions, height } = this.state
 
     console.log('height', height);
@@ -78,7 +80,7 @@ class EditorPage extends Component {
           navIconName="arrow-back"
           title={title}
           onIconClicked={this.onBackPress}
-          actions={actions}
+          actions={editable ? actions : []}
           onActionSelected={this.onActionSelected}
         />
         <TextInput
@@ -89,6 +91,7 @@ class EditorPage extends Component {
           // numberOfLines={12}
           value={value}
           onChange={this.onChange}
+          editable={editable}
         />
       </View>
     )

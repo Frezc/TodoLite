@@ -9,9 +9,9 @@ import {
   SET_NAV_INDEX, SET_DRAWER_LOCKMODE, SET_PAGE_LOADING, 
   UPDATE_TODO, ADD_TODO, SHOW_DIALOG, CLOSE_DIALOG,
   SET_STATUS_FUILTER, SET_TYPE_FILTER, AUTH_SUCCESS,
-  SET_SEARCH_TEXT, SET_YEAR
+  SET_SEARCH_TEXT, SET_YEAR, PAGE_READY
 } from '../constants/actionTypes'
-import { fetchSchedule } from './network'
+import { fetchSchedule,fetchHistoryLocal } from './network'
 import { saveSchedule, saveTodos, saveScheduleAndTodos } from './data'
 import { Colors } from '../assets/Theme'
 
@@ -31,7 +31,12 @@ export function appStart() {
             payload: auth
           })
 
-          dispatch(fetchSchedule(auth.token))
+          // 不在这里进行耗时工作
+          // 加速首屏渲染
+          // dispatch(fetchSchedule(auth.token))
+          // history 页面不会再app开始时就从网络请求
+          // 只有当转到history页面, 并且本地没数据时才会进行请求
+          // dispatch(fetchHistoryLocal())
         }
       })
   }
@@ -173,6 +178,13 @@ export function setSearchText(page, text) {
     type: SET_SEARCH_TEXT,
     page,
     payload: text
+  }
+}
+
+export function pageReady(page) {
+  return {
+    type: PAGE_READY,
+    payload: page
   }
 }
 
