@@ -89,6 +89,7 @@ export function resolveErrorResponse(response) {
         ToastAndroid.show(text, ToastAndroid.LONG)
       })
   }
+  return response.status
 }
 
 /**
@@ -127,4 +128,19 @@ export function formatDate(date) {
  */
 export function arrayInsert(originArr, insertArr, offset) {
   return originArr.slice(0, offset).concat(insertArr).concat(originArr.slice(offset))
+}
+
+/**
+ * return a new array that removed first element param (if exist).
+ * or return origin array. (if not exist)
+ * @param arr origin array won't be modified
+ * @param element
+ */
+export function arrayRemove(arr, element) {
+  const index = arr.indexOf(element)
+  if (index === -1) {
+    return arr
+  } else {
+    return arr.slice(0, index).concat(arr.slice(index + 1))
+  }
 }

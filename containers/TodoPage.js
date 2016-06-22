@@ -28,6 +28,7 @@ import DatePicker from '../components/DatePicker'
 import Button from '../components/Button'
 import { setDrawerLockMode, refreshTodo, addTodo, showDialog, 
   showLoadingDialog, showConfirmDialog, closeDialog } from '../actions/view'
+import { completeTodo, abandonTodo, laysideTodo, recoverTodo } from '../actions/network'
 import { connect } from 'react-redux';
 import dismissKeyboard from 'dismissKeyboard'
 import Keyboard from '../components/Keyboard'
@@ -384,6 +385,7 @@ class TodoPage extends Component {
           }}
         />
       ),
+      onRequestClose: this.onCloseDialog,
       actions: [{
         text: 'CANCEL',
         onPress: this.onCloseDialog
@@ -480,15 +482,69 @@ class TodoPage extends Component {
   }
 
   onComplete = () => {
-
+    const { dispatch, todoId, token, navigator } = this.props
+    dispatch(showConfirmDialog('Complete', 
+      'This operation cannot be reversed. (Your unsaved change will be lost.)', result => {
+      if (result === 'OK') {
+        dispatch(showLoadingDialog('Saving...'))
+        dispatch(completeTodo(todoId, token))
+          .then(() => {
+            this.onCloseDialog()
+            navigator.pop()
+          }).catch(() => {
+            this.onCloseDialog()
+          })
+      } else {
+        this.onCloseDialog()
+      }
+    }))
   }
   
   onAbandon = () => {
-    
+    const { dispatch, todoId, token, navigator } = this.props
+    dispatch(showConfirmDialog('Abandon',
+      'This operation cannot be reversed. (Your unsaved change will be lost.)', result => {
+        if (result === 'OK') {
+          dispatch(showLoadingDialog('Saving...'))
+          dispatch(abandonTodo(todoId, token))
+            .then(() => {
+              this.onCloseDialog()
+              navigator.pop()
+            }).catch(() => {
+              this.onCloseDialog()
+            })
+        } else {
+          this.onCloseDialog()
+        }
+      }))
   }
 
-  onLaySide = () => {
-
+  onLaySide = (status) => {
+    const { dispatch, todoId, token } = this.props
+    dispatch(showConfirmDialog(StatusText[status],
+      'This operation cannot be reversed. (Your unsaved change will be lost.)', result => {
+        if (result === 'OK') {
+          dispatch(showLoadingDialog('Saving...'))
+          let future
+          switch (status) {
+            case 'todo':
+              future = dispatch(recoverTodo(todoId, token))
+              break
+            case 'layside':
+              future = dispatch(laysideTodo(todoId, token))
+              break
+          }
+          future && future.then(() => {
+            this.onCloseDialog()
+            this.resetStateTypeAndUpdate()
+          }).catch(() => {
+            console.log('error');
+            this.onCloseDialog()
+          })
+        } else {
+          this.onCloseDialog()
+        }
+      }))
   }
 
   onSelectType = (index, type) => {
@@ -653,15 +709,11 @@ class TodoPage extends Component {
   componentDidMount() {
     const { dispatch } = this.props;
     dispatch(setDrawerLockMode('locked-closed'))
-    ToastAndroid.show('add hide listener', ToastAndroid.SHORT)
-    // Keyboard.addEventListener('keyboardDidHide', this.onKeyboardHide)
   }
 
   componentWillUnmount() {
     const { dispatch } = this.props;
     dispatch(setDrawerLockMode('unlocked'))
-    ToastAndroid.show('remove hide listener', ToastAndroid.SHORT)
-    // Keyboard.removeEventListener('keyboardDidHide', this.onKeyboardHide)
   }
 
   renderRefreshControl = () => {
@@ -694,21 +746,23 @@ class TodoPage extends Component {
   }
 
   renderActions() {
+    const { status } = this.state
+    const menuStatus = ['complete', 'abandon']
+    if (status == 'todo') {
+      menuStatus.push('layside')
+    } else if (status == 'layside') {
+      menuStatus.push('todo')
+    }
+
     return (
       <TabBar
-        menuItems={[{
-          title: 'Complete',
-          iconName: StatusIcon['complete'],
-          color: statusColors.complete
-        }, {
-          title: 'Abandon',
-          iconName: StatusIcon['abandon'],
-          color: statusColors.abandon
-        }, {
-          title: 'Lay side',
-          iconName: StatusIcon['layside'],
-          color: statusColors.layside
-        }]}
+        menuItems={menuStatus.map(status => {
+          return {
+            title: StatusText[status],
+            iconName: StatusIcon[status],
+            color: status === 'todo' ? statusColors[status][5] : statusColors[status]
+          }
+        })}
         onItemPress={(index) => {
           switch (index) {
             case 0:
@@ -716,7 +770,7 @@ class TodoPage extends Component {
             case 1:
               return this.onAbandon()
             case 2:
-              return this.onLaySide()
+              return this.onLaySide(menuStatus[2])
           }
         }}
       />

@@ -4,9 +4,9 @@ import {
   SET_PAGE_LOADING, FETCH_SCHEDULE_LOCAL, ADD_TODO, SHOW_DIALOG,
   CLOSE_DIALOG, SET_STATUS_FUILTER, SET_TYPE_FILTER, SET_SEARCH_TEXT,
   FETCH_HISTORY_SUCCESS, SET_YEAR, FETCH_HISTORY_LOCAL, LOGOUT,
-  PAGE_READY
+  PAGE_READY, FINISH_TODO
 } from '../constants/actionTypes'
-import { arrayInsert } from '../helpers'
+import { arrayInsert, arrayRemove } from '../helpers'
 
 function navigationViewSelectedIndex(state = 0, action) {
   switch (action.type) {
@@ -93,6 +93,11 @@ function schedulePage(state = defaultSchedule, action) {
         }) 
       }
       break
+
+    case FINISH_TODO:
+      return Object.assign({}, state, {
+        data: arrayRemove(state.data, action.payload) 
+      })
 
     case LOGOUT:
       return defaultSchedule

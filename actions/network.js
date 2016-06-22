@@ -3,15 +3,15 @@ import {
   ToastAndroid
 } from 'react-native'
 import { fetchR, constructQuery, resolveErrorResponse } from '../helpers'
-import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, HISTORY_URL } from '../constants/urls'
+import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, HISTORY_URL, TODO_URL } from '../constants/urls'
 import { APPIDENTITY } from '../constants'
 import {
   AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT,
   FETCH_SCHEDULE_LOCAL, FETCH_HISTORY_SUCCESS, APPEND_HISTORY_SUCCESS,
-  FETCH_HISTORY_LOCAL
+  FETCH_HISTORY_LOCAL, FINISH_TODO
 } from '../constants/actionTypes'
-import { setPageLoading } from './view'
-import { saveScheduleAndTodos, saveHistory } from './data'
+import { setPageLoading, updateLocalTodo } from './view'
+import { saveScheduleAndTodos, saveHistory, saveTodos } from './data'
 
 /**
  * 身份验证成功
@@ -163,7 +163,7 @@ export function fetchHistoryNetwork(token, year, params) {
   return dispatch => {
     const fetchParams = Object.assign({ offset: 0, limit: 50 }, params)
     const query = constructQuery(fetchParams)
-    dispatch(setPageLoading('historyPage'))
+    fetchParams.offset == 0 && dispatch(setPageLoading('historyPage'))
     console.log('fetch', `${HISTORY_URL}?token=${token}&year=${year}&${query}`);
     return fetchR(`${HISTORY_URL}?token=${token}&year=${year}&${query}`)
       .then(response => {
@@ -178,10 +178,10 @@ export function fetchHistoryNetwork(token, year, params) {
         } else {
           resolveErrorResponse(response)
         }
-        dispatch(setPageLoading('historyPage', false))
+        fetchParams.offset == 0 && dispatch(setPageLoading('historyPage', false))
       }).catch(err => {
         ToastAndroid.show(err.message, ToastAndroid.SHORT)
-        dispatch(setPageLoading('historyPage', false))
+        fetchParams.offset == 0 && dispatch(setPageLoading('historyPage', false))
       })
   }
 }
@@ -211,5 +211,104 @@ export function fetchHistoryLocal() {
           })
         }
       })
+  }
+}
+
+export function completeTodo(id, token) {
+  return dispatch => {
+    return finishTodo(id, token, 'complete')
+      .then(() => {
+        dispatch(finishTodoSuccess(id))
+        ToastAndroid.show('Completed!!!', ToastAndroid.SHORT)
+        return dispatch(saveScheduleAndTodos())
+      })
+  }
+}
+
+export function abandonTodo(id, token) {
+  return dispatch => {
+    return finishTodo(id, token, 'abandon')
+      .then(() => {
+        dispatch(finishTodoSuccess(id))
+        ToastAndroid.show('You abandoned a todo.', ToastAndroid.SHORT)
+        return dispatch(saveScheduleAndTodos())
+      })
+  }
+}
+
+export function laysideTodo(id, token) {
+  return dispatch => {
+    return layside(id, token, 'layside')
+      .then(todo => {
+        dispatch(updateLocalTodo(todo))
+        ToastAndroid.show('You lay side a todo.', ToastAndroid.SHORT)
+        return dispatch(saveTodos())
+      })
+  }
+}
+
+export function recoverTodo(id, token) {
+  return dispatch => {
+    return layside(id, token, 'todo')
+      .then(todo => {
+        dispatch(updateLocalTodo(todo))
+        ToastAndroid.show('You recovered a todo.', ToastAndroid.SHORT)
+        return dispatch(saveTodos())
+      })
+  }
+}
+
+function layside(id, token, status) {
+  const formData = new FormData()
+  formData.append('token', token)
+  formData.append('status', status)
+  return new Promise((resolve, reject) => {
+    fetchR(`${TODO_URL}/${id}/layside`, {
+      method: 'post',
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        response.json().then(json => {
+          json.contents = JSON.parse(json.contents)
+          resolve(json)
+        })
+      } else {
+        resolveErrorResponse(response)
+        reject()
+      }
+    }).catch(err => {
+      ToastAndroid.show(err.message, ToastAndroid.SHORT)
+      reject()
+    })
+  })
+}
+
+function finishTodo(id, token, status) {
+  const formData = new FormData()
+  formData.append('token', token)
+  formData.append('status', status)
+  return new Promise((resolve, reject) => {
+    fetchR(`${TODO_URL}/${id}/finish`, {
+      method: 'post',
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        resolve()
+      } else {
+        resolveErrorResponse(response)
+        reject()
+      }
+    }).catch(err => {
+      ToastAndroid.show(err.message, ToastAndroid.SHORT)
+      reject()
+    })
+  })
+
+}
+
+function finishTodoSuccess(id) {
+  return {
+    type: FINISH_TODO,
+    payload: id
   }
 }

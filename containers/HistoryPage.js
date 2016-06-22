@@ -181,6 +181,16 @@ class HistoryPage extends Component {
     }))
   }
 
+  onEndReached = () => {
+    const { dispatch, token, year, all, data } = this.props
+    if (all > data.length) {
+      const params = Object.assign(this.getParams(), {
+        offset: data.length
+      })
+      dispatch(fetchHistoryNetwork(token, year, params))
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     const { data, statusFilter, searchText, typeFilter, year } = this.props
     if (data !== nextProps.data) {
@@ -285,6 +295,8 @@ class HistoryPage extends Component {
                 onRefresh={this.onRefresh}
               />
             }
+            onEndReachedThreshold={100}
+            onEndReached={this.onEndReached}
             renderHeader={this.renderHeader}
             renderFooter={this.renderFooter}
             renderRow={this.renderSection}
@@ -302,7 +314,9 @@ class HistoryPage extends Component {
 const styles = StyleSheet.create({
   loadingMore: {
     flexDirection: 'row',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 42
   },
   loadingMoreText: {
     marginLeft: 8,

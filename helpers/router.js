@@ -4,6 +4,7 @@ import LoginPage from '../containers/LoginPage'
 import NeedAuthPage from '../components/NeedAuth'
 import TodoPage from '../containers/TodoPage'
 import EditorPage from '../containers/EditorPage'
+import ProfilePage from '../containers/ProfilePage'
 
 import string from '../constants/string'
 
@@ -30,6 +31,9 @@ const router = {
   },
   textEditor: {
     component: EditorPage
+  },
+  profile: {
+    component: ProfilePage
   }
 }
 

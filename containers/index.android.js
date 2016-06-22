@@ -46,8 +46,13 @@ class Main extends Component {
   }
 
   onProfilePress = () => {
+    const { token } = this.props
     this.drawer.closeDrawer()
-    this.navigator.push(router.login)
+    if (token) {
+      this.navigator.push(router.profile)      
+    } else {
+      this.navigator.push(router.login)
+    }
   }
 
   onHardwareBackPress = () => {
