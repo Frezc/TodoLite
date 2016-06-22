@@ -1,6 +1,7 @@
-package com.todolite.modules;
+package com.todolite;
 
 import android.app.Activity;
+
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.JavaScriptModule;
 import com.facebook.react.bridge.NativeModule;
@@ -12,19 +13,19 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by Frezc on 2016/5/27.
+ * Created by Frezc on 2016/6/19.
  */
-public class KeyboardEventPackage implements ReactPackage {
+public class CustomReactPackage implements ReactPackage {
+    private Activity activity;
 
-    private Activity mActivity;
-    public KeyboardEventPackage(Activity activity) {
-        mActivity = activity;
+    public CustomReactPackage(Activity activity) {
+        this.activity = activity;
     }
 
     @Override
-    public List<NativeModule> createNativeModules(ReactApplicationContext reactApplicationContext) {
+    public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
-        modules.add(new KeyboardModule(reactApplicationContext, mActivity));
+        modules.add(new AppWidgetsModule(reactContext, activity));
         return modules;
     }
 
@@ -34,7 +35,7 @@ public class KeyboardEventPackage implements ReactPackage {
     }
 
     @Override
-    public List<ViewManager> createViewManagers(ReactApplicationContext reactApplicationContext) {
+    public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Collections.emptyList();
     }
 }

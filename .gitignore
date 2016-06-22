@@ -40,3 +40,4 @@ android/app/libs
 android/keystores/debug.keystore
 TodoLite.iml
 /android/app/app.iml
+/android/android.iml

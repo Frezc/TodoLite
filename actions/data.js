@@ -2,6 +2,7 @@
  * Created by Frezc on 2016/6/8.
  */
 import { AsyncStorage } from 'react-native'
+import AppWidgets from '../libs/AppWidgets'
 
 export function saveSchedule() {
   return (dispatch, getState) => {
@@ -9,6 +10,7 @@ export function saveSchedule() {
     sp.ready = true
     return AsyncStorage.setItem('schedule', JSON.stringify(sp))
       .then(err => {
+        AppWidgets.update()
         console.log('err ' + err)
         return err
       })
@@ -20,6 +22,7 @@ export function saveTodos() {
     const todos = getState().todos
     return AsyncStorage.setItem('todos', JSON.stringify(todos))
       .then(err => {
+        AppWidgets.update()
         console.log('err ' + err)
         return err
       })
@@ -27,12 +30,18 @@ export function saveTodos() {
 }
 
 export function saveScheduleAndTodos() {
-  return (dispatch) => {
-    return Promise.all([dispatch(saveSchedule()), dispatch(saveTodos())])
-      .then(err => {
-        console.log('err ' + err)
-        return err
-      })
+  return (dispatch, getState) => {
+    const sp = getState().view.schedulePage
+    sp.ready = true
+    const todos = getState().todos
+    return Promise.all([
+      AsyncStorage.setItem('schedule', JSON.stringify(sp)),
+      AsyncStorage.setItem('todos', JSON.stringify(todos))
+    ]).then(err => {
+      AppWidgets.update()
+      console.log('err ' + err)
+      return err
+    })
   }
 
 }

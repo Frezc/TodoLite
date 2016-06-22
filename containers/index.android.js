@@ -7,7 +7,8 @@ import {
   DrawerLayoutAndroid,
   Navigator,
   BackAndroid,
-  DeviceEventEmitter
+  DeviceEventEmitter,
+  ToastAndroid
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Colors } from '../assets/Theme'
@@ -18,6 +19,7 @@ import { logout } from '../actions/network'
 import { batchActions } from 'redux-batched-actions'
 import { swipeWithoutGestures } from '../constants/sceneConfigure'
 import DialogCover from '../components/DialogCover'
+import AppWidgets from '../libs/AppWidgets'
 
 class Main extends Component {
 
@@ -72,11 +74,14 @@ class Main extends Component {
 
   componentDidMount() {
     BackAndroid.addEventListener('hardwareBackPress', this.onHardwareBackPress)
+    AppWidgets.addListener('press', event => {
+      ToastAndroid.show(`You press todo id: ${event.id} action: ${event.action}`, ToastAndroid.LONG)
+    })
   }
 
   componentWillUnmount() {
     BackAndroid.removeEventListener('hardwareBackPress', this.onHardwareBackPress)
-
+    AppWidgets.removeAllListeners('press')
   }
 
   configureScene = (route) => {
