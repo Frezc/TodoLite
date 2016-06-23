@@ -75,7 +75,10 @@ class Main extends Component {
   componentDidMount() {
     BackAndroid.addEventListener('hardwareBackPress', this.onHardwareBackPress)
     AppWidgets.addListener('press', event => {
-      ToastAndroid.show(`You press todo id: ${event.id} action: ${event.action}`, ToastAndroid.LONG)
+      ToastAndroid.show(`Action: ${event.action}`, ToastAndroid.LONG)
+      if (event.action == AppWidgets.APPWIDGET_CLICK) {
+        ToastAndroid.show(`You press todo id: ${event.payload.id} action: ${event.action}`, ToastAndroid.LONG)
+      }
     })
   }
 

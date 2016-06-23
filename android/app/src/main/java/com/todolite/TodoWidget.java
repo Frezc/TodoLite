@@ -43,9 +43,18 @@ public class TodoWidget extends AppWidgetProvider {
         views.setRemoteAdapter(R.id.todo_list, intent);
         views.setEmptyView(R.id.todo_list, R.id.empty);
 
-        Intent intent1 = new Intent(context, AppWidgetsEventReceiver.class);
+        // 设置空页面的点击
+        Intent emptyIntent = new Intent(context, AppWidgetsEventReceiver.class);
+        // 设置action才能带extras
+        emptyIntent.setAction(AppWidgetsModule.APPWIDGET_EMPTY_CLICK);
+        PendingIntent emptyPendingIntent =
+                PendingIntent.getBroadcast(context, 0, emptyIntent, 0);
+        views.setOnClickPendingIntent(R.id.empty, emptyPendingIntent);
+
+        // 设置列表每项的PendingIntent Template
+        Intent itemIntent = new Intent(context, AppWidgetsEventReceiver.class);
         PendingIntent pendingIntent =
-                PendingIntent.getBroadcast(context, 0, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.getBroadcast(context, 0, itemIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setPendingIntentTemplate(R.id.todo_list, pendingIntent);
 
         // Instruct the widget manager to update the widget

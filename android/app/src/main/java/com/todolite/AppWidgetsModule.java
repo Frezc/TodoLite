@@ -18,15 +18,13 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created by Frezc on 2016/6/21.
  */
 public class AppWidgetsModule extends ReactContextBaseJavaModule {
     public static final String APPWIDGETS_EVENT = "AppWidgetsEvent";
-    public static final String APPWIDGET_CLICK = "APPWIDGET_CLICK";
+    public static final String APPWIDGET_CLICK = "AppWidgetClick";
+    public static final String APPWIDGET_EMPTY_CLICK = "AppWidgetEmptyClick";
 
     private Context context;
     private Activity activity;
@@ -51,11 +49,10 @@ public class AppWidgetsModule extends ReactContextBaseJavaModule {
         Bundle extras = intent.getExtras();
 
         if (extras != null) {
-            int initialSysAppWidgetsId = extras.getInt("initialSysAppWidgetId");
-            if (initialSysAppWidgetsId != 0) {
-                cb.invoke(initialSysAppWidgetsId,
-                        extras.getString("initialSysAppWidgetAction"),
-                        extras.getString("initialSysAppWidgetPayload"));
+            String initialSysAppWidgetAction = extras.getString("initialSysAppWidgetAction");
+            if (initialSysAppWidgetAction != null) {
+                cb.invoke(extras.getString("initialSysAppWidgetAction"),
+                          extras.getString("initialSysAppWidgetPayload"));
             }
         }
     }
@@ -66,7 +63,7 @@ public class AppWidgetsModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        activity.getIntent().removeExtra("initialSysAppWidgetId");
+//        activity.getIntent().removeExtra("initialSysAppWidgetId");
         activity.getIntent().removeExtra("initialSysAppWidgetAction");
         activity.getIntent().removeExtra("initialSysAppWidgetPayload");
     }
@@ -101,7 +98,7 @@ public class AppWidgetsModule extends ReactContextBaseJavaModule {
                 Bundle extras = intent.getExtras();
 
                 WritableMap params = Arguments.createMap();
-                params.putInt("id", extras.getInt(AppWidgetsEventReceiver.ID));
+//                params.putInt("id", extras.getInt(AppWidgetsEventReceiver.ID));
                 params.putString("action", extras.getString(AppWidgetsEventReceiver.ACTION));
                 params.putString("payload", extras.getString(AppWidgetsEventReceiver.PAYLOAD));
 

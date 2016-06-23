@@ -12,44 +12,43 @@ import android.util.Log;
 import java.util.List;
 
 public class AppWidgetsEventReceiver extends BroadcastReceiver {
-    public static final String ID = "id";
+//    public static final String ID = "id";
     public static final String ACTION = "action";
     public static final String PAYLOAD = "payload";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Bundle extras = intent.getExtras();
-
-        Log.i("ReactSystemAppWidgets", "AppWidgetsEventReceiver: Recived: "
-                + extras.getString(ACTION) + ", ID: " + extras.getInt(ID)
-                + ", payload: " + extras.getString(PAYLOAD));
+        String action = intent.getAction();
 
         if (!applicationIsRunning(context)) {
             String packageName = context.getApplicationContext().getPackageName();
             Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-            launchIntent.putExtra("initialSysAppWidgetId", extras.getInt(ID));
-            launchIntent.putExtra("initialSysAppWidgetAction", extras.getString(ACTION));
-            launchIntent.putExtra("initialSysAppWidgetPayload", extras.getString(PAYLOAD));
+//            launchIntent.putExtra("initialSysAppWidgetId", extras.getInt(ID));
+            launchIntent.putExtra("initialSysAppWidgetAction", action);
+            if (extras != null) {
+                launchIntent.putExtra("initialSysAppWidgetPayload", extras.getString(PAYLOAD));
+            }
             launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
             context.startActivity(launchIntent);
-            Log.i("ReactSystemAppWidgets", "AppWidgetsEventReceiver: Launching: " + packageName);
         } else {
-            sendBroadcast(context, extras);
+            sendBroadcast(context, intent);
         }
     }
 
-    private void sendBroadcast(Context context, Bundle extras) {
+    private void sendBroadcast(Context context, Intent intent) {
         Intent brodcastIntent = new Intent(AppWidgetsModule.APPWIDGETS_EVENT);
-
-        brodcastIntent.putExtra("id", extras.getInt(ID));
-        brodcastIntent.putExtra("action", extras.getString(ACTION));
-        brodcastIntent.putExtra("payload", extras.getString(PAYLOAD));
+        Bundle extras = intent.getExtras();
+        String action = intent.getAction();
+//        brodcastIntent.putExtra("id", extras.getInt(ID));
+        brodcastIntent.putExtra("action", action);
+        if (extras != null) {
+            brodcastIntent.putExtra("payload", extras.getString(PAYLOAD));
+        }
 
         context.sendBroadcast(brodcastIntent);
-        Log.i("ReactSystemAppWidgets", "AppWidgetsEventReceiver: broad cast: "
-                + extras.getString(ACTION) + ", ID: " + extras.getInt(ID)
-                + ", payload: " + extras.getString(PAYLOAD));    }
+    }
 
     private boolean applicationIsRunning(Context context) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(context.ACTIVITY_SERVICE);

@@ -4,6 +4,9 @@ import { DeviceEventEmitter, NativeModules } from 'react-native'
 const AppWidgetsModule = NativeModules.AppWidgetsModule
 
 const AppWidgets = {
+  APPWIDGET_CLICK: "AppWidgetClick",
+  APPWIDGET_EMPTY_CLICK: "AppWidgetEmptyClick",
+
   update: AppWidgetsModule.update,
   addListener: function(type, listener) {
     switch (type) {
@@ -11,12 +14,9 @@ const AppWidgets = {
       case 'click':
         DeviceEventEmitter.addListener('sysModuleAppWidgetsClick', listener);
 
-        AppWidgetsModule.getInitialSysAppWidgets(function(initialSysAppWidgetId,
-                                                              initialSysAppWidgetAction, 
-                                                              initialSysAppWidgetPayload) {
-          if (initialSysAppWidgetId) {
+        AppWidgetsModule.getInitialSysAppWidgets(function(initialSysAppWidgetAction, initialSysAppWidgetPayload) {
+          if (initialSysAppWidgetAction) {
             var event = {
-              id: initialSysAppWidgetId,
               action: initialSysAppWidgetAction,
               payload: JSON.parse(initialSysAppWidgetPayload)
             }

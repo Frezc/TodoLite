@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -19,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -61,11 +63,15 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         Gson gson = new Gson();
         if (!schedule.isEmpty() && !todos.isEmpty()) {
             Schedule scheduleObj = gson.fromJson(schedule, Schedule.class);
+            Log.i("Test", "updateTodolist: " + schedule);
             Map<String, Todo> todosMap = gson.fromJson(todos,
                     new TypeToken<Map<String, Todo>>(){}.getType());
             todolist.clear();
             for (int todoId : scheduleObj.data) {
-                todolist.add(todosMap.get(String.valueOf(todoId)));
+                Todo todo = todosMap.get(String.valueOf(todoId));
+                if ("todo".equals(todo.status)) {
+                    todolist.add(todo);
+                }
             }
         }
     }
@@ -105,11 +111,13 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         views.setTextViewText(R.id.todo_description2, descriptions.get(1));
 
         Bundle extras = new Bundle();
-        extras.putInt(AppWidgetsEventReceiver.ID, todo.id);
+        extras.putString(AppWidgetsEventReceiver.PAYLOAD,
+                String.format(Locale.US, "{\"id\":%d}", todo.id));
         // 可以用来区分不同的事件
         extras.putString(AppWidgetsEventReceiver.ACTION, AppWidgetsModule.APPWIDGET_CLICK);
         Intent fillIntent = new Intent();
         fillIntent.putExtras(extras);
+        fillIntent.setAction(AppWidgetsModule.APPWIDGET_CLICK);
         views.setOnClickFillInIntent(R.id.todo_widget, fillIntent);
         return views;
     }
