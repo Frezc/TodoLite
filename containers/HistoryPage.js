@@ -6,7 +6,7 @@ import {
   ListView,
   RefreshControl,
   ToastAndroid,
-  ProgressBarAndroid
+  ActivityIndicator
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Colors } from '../assets/Theme'
@@ -258,9 +258,9 @@ class HistoryPage extends Component {
         <View
           style={styles.loadingMore}
         >
-          <ProgressBarAndroid
+          <ActivityIndicator
             color={Colors.accent100}
-            styleAttr="Small"
+            size="small"
           />
           <Text
             style={styles.loadingMoreText}

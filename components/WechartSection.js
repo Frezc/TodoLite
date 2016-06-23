@@ -23,7 +23,7 @@ class WechartSection extends Component {
     onPress: PropTypes.func
   }
 
-  static propTypes = {
+  static defaultProps = {
     disabled: false
   }
 

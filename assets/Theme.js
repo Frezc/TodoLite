@@ -43,5 +43,5 @@ export const statusColors = {
   layside: '#9C27B0',
   
   // abandon
-  abandon: '#673AB7'
+  abandon: '#D50000'
 }

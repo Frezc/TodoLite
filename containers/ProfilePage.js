@@ -76,6 +76,7 @@ class ProfilePage extends Component {
             type: 'text',
             value: 151
           }}
+          disabled
         />
         <Section
           style={styles.section}
@@ -84,6 +85,7 @@ class ProfilePage extends Component {
             type: 'text',
             value: 151
           }}
+          disabled
         />
         <Section
           style={styles.section}
@@ -92,6 +94,7 @@ class ProfilePage extends Component {
             type: 'text',
             value: 151
           }}
+          disabled
         />
         <Section
           style={styles.section}
@@ -100,6 +103,7 @@ class ProfilePage extends Component {
             type: 'text',
             value: 151
           }}
+          disabled
         />
       </ScrollView>
     )

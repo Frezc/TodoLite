@@ -1,11 +1,11 @@
 import {
-  DeviceEventEmitter
+  Keyboard
 } from 'react-native';
 
 const showListeners = new Set()
 const hideListeners = new Set()
 
-Keyboard = {
+const KeyboardEvent = {
 
   addEventListener: (eventName, listener) => {
     if (eventName === 'keyboardDidShow') {
@@ -40,7 +40,7 @@ Keyboard = {
   }
 }
 
-DeviceEventEmitter.addListener('keyboardDidShow', Keyboard.onKeyboardDidShow)
-DeviceEventEmitter.addListener('keyboardDidHide', Keyboard.onKeyboardDidHide)
+Keyboard.addListener('keyboardDidShow', KeyboardEvent.onKeyboardDidShow)
+Keyboard.addListener('keyboardDidHide', KeyboardEvent.onKeyboardDidHide)
 
-export default Keyboard
+export default KeyboardEvent

@@ -20,6 +20,7 @@ import {
 import { saveSchedule } from '../actions/data'
 import { StatusText, TypeText } from '../constants'
 import ListFilterContainer from './ListFilterContainer'
+import AppWidgets from '../libs/AppWidgets'
 
 const actions = [{
   title: 'Add Todo', iconName: 'add', show: 'always', iconColor: 'white'
@@ -126,6 +127,10 @@ class SchedulePage extends Component {
   }
 
   onActionSelected = index => {
+    this.onAddTodo()
+  }
+
+  onAddTodo = () => {
     this.props.navigator.push({
       ...router.todo,
       props: {
@@ -179,6 +184,23 @@ class SchedulePage extends Component {
     this.onCloseDialog()
   }
 
+  onSectionPress = (todoId) => {
+    this.props.navigator.push({
+      ...router.todo,
+      props: {
+        todoId,
+        type: 'edit'
+      }
+    })
+  }
+
+  appWidgetClick = event => {
+    if (event.action == AppWidgets.APPWIDGET_CLICK) {
+      ToastAndroid.show(`You press todo id: ${event.payload.id} action: ${event.action}`, ToastAndroid.LONG)
+      this.onSectionPress(event.payload.id)
+    }
+  }
+
   componentWillReceiveProps(nextProps) {
     this.setState({
       dataSource: this.state.dataSource.cloneWithRows(this.generateData(nextProps))
@@ -188,24 +210,30 @@ class SchedulePage extends Component {
   componentDidMount() {
     const { ready, dispatch, token } = this.props
     if (!ready) {
+      // todo: 首屏只渲染列表的部分项
       dispatch(fetchSchedule(token))
+        .then(() => {
+          AppWidgets.addListener(AppWidgets.APPWIDGET_CLICK, this.appWidgetClick)
+          // todo: test
+          AppWidgets.addListener(AppWidgets.APPWIDGET_EMPTY_CLICK, this.onAddTodo)
+        })
       dispatch(pageReady('schedulePage'))
+    } else {
+      AppWidgets.addListener(AppWidgets.APPWIDGET_CLICK, this.appWidgetClick)
+      AppWidgets.addListener(AppWidgets.APPWIDGET_EMPTY_CLICK, this.onAddTodo)
     }
+  }
+
+  componentWillUnmount() {
+    AppWidgets.removeListener(AppWidgets.APPWIDGET_CLICK, this.appWidgetClick)
+    AppWidgets.removeListener(AppWidgets.APPWIDGET_EMPTY_CLICK, this.onAddTodo)
   }
 
   renderSection = (todo, sectionID, rowID, highlightRow) => {
     return (
       <TodoSection
         data={todo}
-        onPress={() => {
-          this.props.navigator.push({
-            ...router.todo,
-            props: {
-              todoId: todo.id,
-              type: 'edit'
-            }
-          })
-        }}
+        onPress={() => this.onSectionPress(todo.id)}
       />
     )
   }

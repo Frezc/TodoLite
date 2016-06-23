@@ -16,7 +16,6 @@ import NavigationView from '../components/NavigationView'
 import router from '../helpers/router'
 import { setNavIndex } from '../actions/view'
 import { logout } from '../actions/network'
-import { batchActions } from 'redux-batched-actions'
 import { swipeWithoutGestures } from '../constants/sceneConfigure'
 import DialogCover from '../components/DialogCover'
 import AppWidgets from '../libs/AppWidgets'
@@ -74,17 +73,16 @@ class Main extends Component {
 
   componentDidMount() {
     BackAndroid.addEventListener('hardwareBackPress', this.onHardwareBackPress)
-    AppWidgets.addListener('press', event => {
-      ToastAndroid.show(`Action: ${event.action}`, ToastAndroid.LONG)
-      if (event.action == AppWidgets.APPWIDGET_CLICK) {
-        ToastAndroid.show(`You press todo id: ${event.payload.id} action: ${event.action}`, ToastAndroid.LONG)
-      }
-    })
+    // AppWidgets.addListener('press', event => {
+    //   ToastAndroid.show(`Action: ${event.action}`, ToastAndroid.LONG)
+    //   if (event.action == AppWidgets.APPWIDGET_CLICK) {
+    //     ToastAndroid.show(`You press todo id: ${event.payload.id} action: ${event.action}`, ToastAndroid.LONG)
+    //   }
+    // })
   }
 
   componentWillUnmount() {
     BackAndroid.removeEventListener('hardwareBackPress', this.onHardwareBackPress)
-    AppWidgets.removeAllListeners('press')
   }
 
   configureScene = (route) => {
