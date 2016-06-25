@@ -2,16 +2,16 @@ import {
   AsyncStorage,
   ToastAndroid
 } from 'react-native'
-import { fetchR, constructQuery, resolveErrorResponse } from '../helpers'
-import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, HISTORY_URL, TODO_URL } from '../constants/urls'
+import { fetchR, constructQuery, resolveErrorResponse, easyFetch } from '../helpers'
+import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, HISTORY_URL, TODO_URL, USER_URL } from '../constants/urls'
 import { APPIDENTITY } from '../constants'
 import {
   AUTH_FAILED, AUTH_SUCCESS, FETCH_SCHEDULE_SUCCESS, LOGOUT,
   FETCH_SCHEDULE_LOCAL, FETCH_HISTORY_SUCCESS, APPEND_HISTORY_SUCCESS,
-  FETCH_HISTORY_LOCAL, FINISH_TODO
+  FETCH_HISTORY_LOCAL, FINISH_TODO, REFRESH_USER
 } from '../constants/actionTypes'
 import { setPageLoading, updateLocalTodo } from './view'
-import { saveScheduleAndTodos, saveHistory, saveTodos } from './data'
+import { saveScheduleAndTodos, saveHistory, saveTodos, clearData, saveAuth } from './data'
 
 /**
  * 身份验证成功
@@ -46,8 +46,9 @@ export function authFailed(error) {
  */
 export function refreshToken(token) {
   return dispatch => {
-    return fetchR(`${REFRESH_URL}?app=${APPIDENTITY}&token=${token}`)
-      .then(response => {
+    return easyFetch(REFRESH_URL, {
+      token: token
+    }).then(response => {
         if (response.ok) {
           response.json().then(json => {
             ToastAndroid.show('refresh success: ' + JSON.stringify(json), ToastAndroid.SHORT)
@@ -63,10 +64,16 @@ export function refreshToken(token) {
 }
 
 function fetchTodoList(token, params = {}) {
+  /*
   let query = constructQuery(params)
   if (query) query = '&' + query
   console.log('fetch todolist', `${TODOLIST_URL}?token=${token}${query}`);
   return fetchR(`${TODOLIST_URL}?token=${token}${query}`)
+  */
+  return easyFetch(TODOLIST_URL, {
+    token: token,
+    ...params
+  })
 }
 
 /**
@@ -144,14 +151,16 @@ function fetchScheduleSuccess(json) {
  */
 export function logout(token) {
   return dispatch => {
-    return fetchR(`${UNAUTH_URL}?app=${APPIDENTITY}&token=${token}`)
-      .then(response => {
+    // return fetchR(`${UNAUTH_URL}?app=${APPIDENTITY}&token=${token}`)
+    return easyFetch(UNAUTH_URL, {
+      token: token
+    }).then(response => {
         dispatch({
           type: LOGOUT
         })
-        return AsyncStorage.clear()
+        return dispatch(clearData())
           .then(err => {
-            ToastAndroid.show('logout: ' + err, ToastAndroid.SHORT)
+            // ToastAndroid.show('logout: ' + err, ToastAndroid.SHORT)
           })
       }).catch(err => {
         ToastAndroid.show(err, ToastAndroid.SHORT)
@@ -165,7 +174,12 @@ export function fetchHistoryNetwork(token, year, params) {
     const query = constructQuery(fetchParams)
     fetchParams.offset == 0 && dispatch(setPageLoading('historyPage'))
     console.log('fetch', `${HISTORY_URL}?token=${token}&year=${year}&${query}`);
-    return fetchR(`${HISTORY_URL}?token=${token}&year=${year}&${query}`)
+    return easyFetch(HISTORY_URL, {
+      token: token,
+      year: year,
+      ...fetchParams
+    })
+    // return fetchR(`${HISTORY_URL}?token=${token}&year=${year}&${query}`)
       .then(response => {
         if (response.ok) {
           response.json().then(json => {
@@ -310,5 +324,36 @@ function finishTodoSuccess(id) {
   return {
     type: FINISH_TODO,
     payload: id
+  }
+}
+
+export function fetchRefreshUser() {
+  return (dispatch, getState) => {
+    const id = getState().auth.user.id
+    return easyFetch(`${USER_URL}/${id}`).then(response => {
+      if (response.ok) {
+        return response.json().then(json => {
+          dispatch(refreshUser(json))
+          dispatch(saveAuth())
+        })
+      }
+      resolveErrorResponse(response)
+    }).catch(err => {
+      ToastAndroid.show(err.message, ToastAndroid.SHORT)
+      reject()
+    })
+  }
+}
+
+function refreshUser(user) {
+  return {
+    type: REFRESH_USER,
+    payload: user
+  }
+}
+
+export function fetchUpdateUser(params = {}) {
+  return (dispatch) => {
+    return 
   }
 }

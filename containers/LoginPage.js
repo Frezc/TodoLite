@@ -18,7 +18,7 @@ import { setDrawerLockMode } from '../actions/view'
 import { authSuccess, fetchScheduleNetwork, fetchHistoryNetwork } from '../actions/network'
 import { AUTH_URL, SENDEMAIL_URL, REGISTER_URL } from '../constants/urls'
 import { APPIDENTITY } from '../constants'
-import { fetchR, resolveErrorResponse } from '../helpers'
+import { fetchR, resolveErrorResponse, easyFetch } from '../helpers'
 import reactMixin from 'react-mixin'
 import TimerMixin from 'react-timer-mixin';
 import isEmail from 'validator/lib/isEmail';
@@ -149,7 +149,10 @@ class LoginPage extends Component {
       })
 
       console.log(`${SENDEMAIL_URL}?email=${this.state.reEmail}`);
-      fetchR(`${SENDEMAIL_URL}?email=${this.state.reEmail}`)
+      easyFetch(SENDEMAIL_URL, {
+        email: this.state.reEmail
+      })
+      // fetchR(`${SENDEMAIL_URL}?email=${this.state.reEmail}`)
         .then(response => {
           if (response.ok) {
             ToastAndroid.show('Email sent successfully', ToastAndroid.SHORT)
@@ -245,6 +248,7 @@ class LoginPage extends Component {
       >
         <TextInput
           placeholder="EMAIL"
+          style={styles.textInput}
           selectionColor={Colors.accent100}
           underlineColorAndroid={Colors.accent400}
           keyboardType="email-address"
@@ -253,7 +257,7 @@ class LoginPage extends Component {
           onBlur={() => console.log('on blur')}
         />
         <TextInput
-          style={{ marginTop: 8 }}
+          style={styles.textInput}
           placeholder="PASSWORD"
           secureTextEntry
           selectTextOnFocus
@@ -265,7 +269,7 @@ class LoginPage extends Component {
         <LoadingButton
           text="OK"
           loading={this.state.logining}
-          style={{ marginTop: 32 }}
+          style={styles.sureBtn}
           buttonTextStyle={{ color: Colors.accent400 }}
           onPress={this.onLogin}
         />
@@ -283,6 +287,7 @@ class LoginPage extends Component {
       >
         <TextInput
           placeholder="EMAIL"
+          style={styles.textInput}
           selectionColor={Colors.accent100}
           underlineColorAndroid={Colors.accent400}
           keyboardType="email-address"
@@ -290,7 +295,7 @@ class LoginPage extends Component {
           onChangeText={text => this.setState({ reEmail: text })}
         />
         <TextInput
-          style={{ marginTop: 8 }}
+          style={styles.textInput}
           placeholder="PASSWORD"
           secureTextEntry
           selectTextOnFocus
@@ -300,7 +305,7 @@ class LoginPage extends Component {
           onChangeText={text => this.setState({ rePw: text })}
         />
         <TextInput
-          style={{ marginTop: 8 }}
+          style={styles.textInput}
           placeholder="PASSWORD REPEAT"
           secureTextEntry
           selectTextOnFocus
@@ -310,7 +315,7 @@ class LoginPage extends Component {
           onChangeText={text => this.setState({ rePwr: text })}
         />
         <TextInput
-          style={{ marginTop: 8 }}
+          style={styles.textInput}
           placeholder="NICKNAME"
           selectionColor={Colors.accent100}
           underlineColorAndroid={Colors.accent400}
@@ -318,10 +323,10 @@ class LoginPage extends Component {
           onChangeText={text => this.setState({ reName: text })}
         />
         <View
-          style={{ flexDirection: 'row', marginTop: 8, alignSelf: 'stretch', alignItems: 'center' }}
+          style={styles.getCodeLine}
         >
           <TextInput
-            style={{ flex: 1 }}
+            style={styles.fillParent}
             placeholder="CODE"
             selectionColor={Colors.accent100}
             underlineColorAndroid={Colors.accent400}
@@ -330,14 +335,14 @@ class LoginPage extends Component {
           />
           <Button
             text={this.state.countDown || "GET CODE"}
-            style={{ width: 80 }}
+            style={styles.getCodeButton}
             disabled={this.state.getCodeDisable}
             onPress={this.sendEmail}
           />
         </View>
         <LoadingButton
           text="OK"
-          style={{ marginTop: 32 }}
+          style={styles.sureBtn}
           buttonTextStyle={{ color: Colors.accent400 }}
           onPress={this.onRegister}
         />
@@ -348,7 +353,7 @@ class LoginPage extends Component {
   render() {
     
     return (
-      <View style={{ flex: 1 }}>
+      <View style={styles.fillParent}>
         <Toolbar
           navIconName="arrow-back"
           title={'Todo Lite'}
@@ -360,15 +365,15 @@ class LoginPage extends Component {
           ref={ref => this.indicator = ref}
         />
         <ViewPagerAndroid
-          style={styles.pages}
+          style={styles.fillParent}
           keyboardDismissMode="on-drag"
           onPageScroll={this.onPageScroll}
           ref={r => this.viewPager = r}
         >
-          <View style={styles.pageContainer}>
+          <View style={styles.fillParent}>
             {this.renderLoginPage()}
           </View>
-          <View style={styles.pageContainer}>
+          <View style={styles.fillParent}>
             {this.renderRegisterPage()}
           </View>
         </ViewPagerAndroid>
@@ -380,10 +385,7 @@ class LoginPage extends Component {
 reactMixin(LoginPage.prototype, TimerMixin)
 
 const styles = StyleSheet.create({
-  pages: {
-    flex: 1
-  },
-  pageContainer: {
+  fillParent: {
     flex: 1
   },
   page: {
@@ -393,8 +395,22 @@ const styles = StyleSheet.create({
     // backgroundColor: 'orange'
   },
   pageContent: {
-    alignItems: 'center',
-  }
+    alignItems: 'center'
+  },
+  textInput: {
+    alignSelf: 'stretch',
+    marginBottom: 8
+  },
+  getCodeLine: {
+    flexDirection: 'row',
+    marginTop: 8,
+    alignSelf: 'stretch',
+    alignItems: 'center'
+  },
+  getCodeButton: {
+    width: 80
+  },
+  sureBtn: { marginTop: 32 }
 })
 
 function select(state, ownProps) {

@@ -61,12 +61,13 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         String schedule = queryFromDB(db, "schedule");
         String todos = queryFromDB(db, "todos");
         Gson gson = new Gson();
+        todolist.clear();
         if (!schedule.isEmpty() && !todos.isEmpty()) {
             Schedule scheduleObj = gson.fromJson(schedule, Schedule.class);
             Log.i("Test", "updateTodolist: " + schedule);
             Map<String, Todo> todosMap = gson.fromJson(todos,
                     new TypeToken<Map<String, Todo>>(){}.getType());
-            todolist.clear();
+
             for (int todoId : scheduleObj.data) {
                 Todo todo = todosMap.get(String.valueOf(todoId));
                 if ("todo".equals(todo.status)) {

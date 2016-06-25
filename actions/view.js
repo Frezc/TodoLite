@@ -2,8 +2,8 @@ import React from 'react';
 import {
   Text,
   TextInput,
-  ProgressBarAndroid,
-  AsyncStorage
+  AsyncStorage,
+  ActivityIndicator
 } from 'react-native'
 import {
   SET_NAV_INDEX, SET_DRAWER_LOCKMODE, SET_PAGE_LOADING, 
@@ -115,8 +115,9 @@ export function showLoadingDialog(title, onRequestClose) {
       title,
       onRequestClose,
       content: (
-        <ProgressBarAndroid
+        <ActivityIndicator
           color={Colors.accent100}
+          size="large"
         />
       )
     }

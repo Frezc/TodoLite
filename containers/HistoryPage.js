@@ -78,7 +78,7 @@ class HistoryPage extends Component {
     this.state = {
       dataSource: new ListView.DataSource({
         rowHasChanged: this.rowHasChanged
-      }).cloneWithRows(props.data),
+      }).cloneWithRows(props.data)
     }
   }
 
@@ -273,7 +273,6 @@ class HistoryPage extends Component {
   render() {
     const { openDrawer, token, loading, navigator, year } = this.props
 
-    // todo: 列表的无限加载
     return (
       <View style={{ flex: 1 }}>
         <Toolbar

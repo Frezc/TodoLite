@@ -57,3 +57,20 @@ export function saveHistory() {
       })
   }
 }
+
+export function clearData() {
+  return dispatch => {
+    return AsyncStorage.clear()
+      .then(err => {
+        AppWidgets.update()
+        return err
+      })
+  }
+}
+
+export function saveAuth() {
+  return (dispatch, getState) => {
+    const auth = getState().auth
+    return AsyncStorage.setItem('auth', JSON.stringify(auth))
+  }
+}

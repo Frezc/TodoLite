@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import { AUTH_SUCCESS, LOGOUT } from '../constants/actionTypes'
+import { AUTH_SUCCESS, LOGOUT, REFRESH_USER } from '../constants/actionTypes'
 
 const defaultUser = {
   id: -1,
@@ -10,16 +10,21 @@ function user(state = null, action) {
   switch (action.type) {
     case AUTH_SUCCESS:
       return action.payload.user
+    
+    case REFRESH_USER:
+      return action.payload
+    
     case LOGOUT:
       return null
   }
   return state
 }
 
-function token(state = null, action) {
+function token(state = "", action) {
   switch (action.type) {
     case AUTH_SUCCESS:
       return action.payload.token
+    
     case LOGOUT:
       return null
   }

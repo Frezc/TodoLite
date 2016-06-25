@@ -21,19 +21,15 @@ import SingleLineSection from '../components/SingleLineSection'
 import Checkbox from '../components/Checkbox'
 import { TypeIcon, StatusText, TypeText, StatusIcon } from '../constants'
 import { TODO_URL } from '../constants/urls'
-import DialogCover from '../components/DialogCover'
 import SelectableList from '../components/SelectableList'
 import SliderWithIndicator from '../components/SliderWithIndicator'
 import DatePicker from '../components/DatePicker'
-import Button from '../components/Button'
-import { setDrawerLockMode, refreshTodo, addTodo, showDialog, 
+import { setDrawerLockMode, refreshTodo, addTodo, showDialog,
   showLoadingDialog, showConfirmDialog, closeDialog } from '../actions/view'
 import { completeTodo, abandonTodo, laysideTodo, recoverTodo } from '../actions/network'
 import { connect } from 'react-redux';
-import dismissKeyboard from 'dismissKeyboard'
-import Keyboard from '../components/Keyboard'
 import router from '../helpers/router'
-import { formatDate, fetchR, resolveErrorResponse } from '../helpers'
+import { formatDate, fetchR, resolveErrorResponse, easyFetch } from '../helpers'
 import TabBar from '../components/TabBar'
 
 const TypeDialogList = Object.keys(TypeIcon).map(type => {
@@ -672,7 +668,10 @@ class TodoPage extends Component {
   onRefreshSure = () => {
     const { todoId, token, dispatch } = this.props
 
-    fetchR(`${TODO_URL}/${todoId}?token=${token}`)
+    easyFetch(`${TODO_URL}/${todoId}`, {
+      token: token
+    })
+    // fetchR(`${TODO_URL}/${todoId}?token=${token}`)
       .then(response => {
         if (response.ok) {
           response.json().then(json => {
@@ -719,7 +718,7 @@ class TodoPage extends Component {
   renderRefreshControl = () => {
     const { type } = this.props
     const { loading } = this.state
-    if (type != 'create') {
+    if (type == 'edit') {
       return (
         <RefreshControl
           colors={[Colors.accent100, Colors.accent200, Colors.accent400]}

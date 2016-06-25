@@ -4,7 +4,7 @@ import {
   Text,
   View,
   TouchableNativeFeedback,
-  ProgressBarAndroid
+  ActivityIndicator
 } from 'react-native';
 import { Colors } from '../assets/Theme'
 
@@ -13,19 +13,15 @@ class LoadingButton extends Component {
   static propTypes = {
     loading: PropTypes.bool,
     text: PropTypes.string.isRequired,
-    style: PropTypes.object,
-    buttonStyle: PropTypes.object,
-    buttonTextStyle: PropTypes.object,
-    progressBarStyle: PropTypes.object,
+    style: PropTypes.any,
+    buttonStyle: PropTypes.any,
+    buttonTextStyle: PropTypes.any,
+    progressBarStyle: PropTypes.any,
     onPress: PropTypes.func
   }
 
   static defaultProps = {
-    loading: false,
-    style: {},
-    buttonTextStyle: {},
-    buttonStyle: {},
-    progressBarStyle: {}
+    loading: false
   }
 
   renderButton() {
@@ -46,7 +42,7 @@ class LoadingButton extends Component {
     const { style, progressBarStyle } = this.props;
 
     return (
-      <ProgressBarAndroid color={Colors.accent200} style={[styles.root, style, progressBarStyle]} />
+      <ActivityIndicator color={Colors.accent200} style={[styles.root, style, progressBarStyle]} />
     )
   }
 

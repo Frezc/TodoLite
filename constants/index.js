@@ -52,3 +52,8 @@ export const yearPickerItems = years.map(year => {
     value: year
   }
 })
+
+/**
+ * SchedulePage和HistoryPage页面列表单页的数量，首次只显示一页来用来优化首屏渲染 
+ */
+export const PAGE_ITEMS = 15

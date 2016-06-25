@@ -36,6 +36,10 @@
  *       id: number,
  *       nickname: string,
  *       email: string,
+ *       todo: number,
+ *       layside: number,
+ *       complete: number,
+ *       abandon: number,
  *       created_at: string
  *     },
  *     token: string

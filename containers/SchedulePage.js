@@ -18,7 +18,7 @@ import {
   pageReady
 } from '../actions/view'
 import { saveSchedule } from '../actions/data'
-import { StatusText, TypeText } from '../constants'
+import { StatusText, TypeText, PAGE_ITEMS } from '../constants'
 import ListFilterContainer from './ListFilterContainer'
 import AppWidgets from '../libs/AppWidgets'
 
@@ -83,6 +83,12 @@ class SchedulePage extends Component {
     }
   }
 
+  /**
+   * 生成列表的数据项
+   * @param props
+   * @param max 最大数据量
+   * @returns {Array}
+   */
   generateData = (props = this.props) => {
     const { data, todos, statusFilter, typeFilter, searchText } = props
     const sortedData = data.filter(todoId => {
@@ -202,6 +208,7 @@ class SchedulePage extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    
     this.setState({
       dataSource: this.state.dataSource.cloneWithRows(this.generateData(nextProps))
     })
@@ -209,18 +216,19 @@ class SchedulePage extends Component {
 
   componentDidMount() {
     const { ready, dispatch, token } = this.props
-    if (!ready) {
-      // todo: 首屏只渲染列表的部分项
-      dispatch(fetchSchedule(token))
-        .then(() => {
-          AppWidgets.addListener(AppWidgets.APPWIDGET_CLICK, this.appWidgetClick)
-          // todo: test
-          AppWidgets.addListener(AppWidgets.APPWIDGET_EMPTY_CLICK, this.onAddTodo)
-        })
-      dispatch(pageReady('schedulePage'))
-    } else {
-      AppWidgets.addListener(AppWidgets.APPWIDGET_CLICK, this.appWidgetClick)
-      AppWidgets.addListener(AppWidgets.APPWIDGET_EMPTY_CLICK, this.onAddTodo)
+    if (token) {
+      if (!ready) {
+        dispatch(fetchSchedule(token))
+          .then(() => {
+            AppWidgets.addListener(AppWidgets.APPWIDGET_CLICK, this.appWidgetClick)
+            // todo: test
+            AppWidgets.addListener(AppWidgets.APPWIDGET_EMPTY_CLICK, this.onAddTodo)
+          })
+        dispatch(pageReady('schedulePage'))
+      } else {
+        AppWidgets.addListener(AppWidgets.APPWIDGET_CLICK, this.appWidgetClick)
+        AppWidgets.addListener(AppWidgets.APPWIDGET_EMPTY_CLICK, this.onAddTodo)
+      }
     }
   }
 
@@ -273,7 +281,7 @@ class SchedulePage extends Component {
           navIconName="menu"
           title={'Schedule'}
           onIconClicked={openDrawer}
-          actions={actions}
+          actions={token ? actions : []}
           onActionSelected={this.onActionSelected}
         />
         {token ?

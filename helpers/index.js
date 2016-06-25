@@ -1,4 +1,5 @@
 import { ToastAndroid } from 'react-native';
+import { APPIDENTITY } from '../constants'
 
 export function generateRandomStringArray(length, str = 'random') {
   let array = new Array(length)
@@ -41,6 +42,19 @@ export function fetchR(url, params) {
     };
     wrappedFetch(params.retry);
   });
+}
+
+/**
+ * auto construct query string with param app='todolite_android'
+ * @param url
+ * @param query query object
+ * @param params
+ */
+export function easyFetch(url, query = {}, params) {
+  const qs = constructQuery(Object.assign({
+    app: APPIDENTITY
+  }, query))
+  return fetchR(`${url}?${qs}`, params)
 }
 
 /**
@@ -97,11 +111,24 @@ export function resolveErrorResponse(response) {
  * @param params
  */
 export function constructQuery(params = {}) {
-  let query = []
+  const query = []
   for (const key of Object.keys(params)) {
     query.push(key + '=' + params[key])
   }
   return query.join('&')
+}
+
+/**
+ * construct form data body
+ * @param params
+ * @returns {FormData}
+ */
+export function constructBody(params = {}) {
+  const formData = new FormData()
+  for (const key of Object.keys(params)) {
+    formData.append(key, params[key])
+  }
+  return formData
 }
 
 /**
