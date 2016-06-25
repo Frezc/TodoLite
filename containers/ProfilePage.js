@@ -15,8 +15,14 @@ import Toolbar from '../components/Toolbar'
 import { Colors } from '../assets/Theme'
 import Section from '../components/WechartSection'
 import { connect } from 'react-redux';
-import { showDialog, closeDialog } from '../actions/view'
-import { fetchRefreshUser } from '../actions/network'
+import { showDialog, closeDialog, showConfirmDialog, showLoadingDialog } from '../actions/view'
+import { fetchRefreshUser, fetchUpdateUser } from '../actions/network'
+
+const ModifiedActions = [{
+  title: 'Revert', iconName: 'undo', show: 'always', iconColor: 'white'
+},{
+  title: 'Save', iconName: 'save', show: 'always', iconColor: 'white'
+}]
 
 class ProfilePage extends Component {
 
@@ -32,7 +38,8 @@ class ProfilePage extends Component {
   }
 
   state = {
-    loading: false
+    loading: false,
+    nickname: this.props.nickname
   }
 
   temp = {
@@ -60,9 +67,40 @@ class ProfilePage extends Component {
     this.props.dispatch(closeDialog())
   }
 
+  onActionSelected = index => {
+    const { dispatch } = this.props
+    switch (index) {
+      case 0:
+        dispatch(showConfirmDialog('Revert', 'This operation is not reversible', (result) => {
+          switch (result) {
+            case 'OK':
+              this.setState({
+                nickname: this.props.nickname
+              })
+              break
+          }
+          this.onCloseDialog()
+        }))
+        break
+
+      case 1:
+        dispatch(showLoadingDialog('Updating...'))
+        dispatch(fetchUpdateUser({
+          nickname: this.state.nickname
+        })).then(() => {
+          this.onCloseDialog()
+        })
+        break
+    }
+  }
+
+  hasModified = () => {
+    return this.state.nickname !== this.props.nickname
+  }
+
   changeName = () => {
-    const { dispatch, nickname } = this.props
-    this.temp.nickname = nickname
+    const { dispatch } = this.props
+    this.temp.nickname = this.state.nickname
     dispatch(showDialog({
       title: 'Change name (1 ~ 32)',
       content: (
@@ -71,7 +109,7 @@ class ProfilePage extends Component {
           underlineColorAndroid={Colors.accent400}
           autoFocus
           defaultValue={this.temp.nickname}
-          maxLength={30}
+          maxLength={32}
           onChangeText={text => this.temp.nickname = text}
         />
       ),
@@ -82,13 +120,20 @@ class ProfilePage extends Component {
       }, {
         text: 'OK',
         onPress: () => {
-          if (nickname != this.temp.nickname) {
+          if (this.state.nickname != this.temp.nickname) {
             // update name
+            this.setState({
+              nickname: this.temp.nickname
+            })
           }
           this.onCloseDialog()
         }
       }]
     }))
+  }
+
+  changePassword = () => {
+
   }
 
   renderRefreshControl = () => {
@@ -103,7 +148,7 @@ class ProfilePage extends Component {
   }
 
   renderContent() {
-    const { avatar, nickname, email, created_at, todo, layside, complete, abandon } = this.props
+    const { avatar, email, created_at, todo, layside, complete, abandon } = this.props
 
     return (
       <ScrollView
@@ -124,7 +169,7 @@ class ProfilePage extends Component {
           onPress={this.changeName}
           rightItem={{
             type: 'text',
-            value: nickname
+            value: this.state.nickname
           }}
         />
         <Section
@@ -142,6 +187,11 @@ class ProfilePage extends Component {
             type: 'text',
             value: created_at
           }}
+        />
+        <Section
+          style={styles.section}
+          title="Change password"
+          onPress={this.changePassword}
         />
         <Section
           style={styles.firstSection}
@@ -180,14 +230,14 @@ class ProfilePage extends Component {
   }
 
   render() {
-    const { token, loading, navigator } = this.props
-
     return (
       <View style={styles.fillParent}>
         <Toolbar
           navIconName="arrow-back"
           title={'Profile'}
           onIconClicked={this.onBackPress}
+          actions={this.hasModified() ? ModifiedActions : []}
+          onActionSelected={this.onActionSelected}
         />
         {this.renderContent()}
       </View>

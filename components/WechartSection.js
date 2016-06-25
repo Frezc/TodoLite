@@ -18,7 +18,7 @@ class WechartSection extends Component {
     rightItem: PropTypes.shape({
       type: PropTypes.oneOf(['text', 'image']).isRequired,
       value: PropTypes.any.isRequired            // if type is image, value should be the uri
-    }).isRequired,
+    }),
     disabled: PropTypes.bool,
     onPress: PropTypes.func
   }
@@ -52,7 +52,7 @@ class WechartSection extends Component {
   }
 
   render() {
-    const { style, title, disabled, onPress } = this.props
+    const { style, title, disabled, onPress, rightItem } = this.props
     return (
       <TouchableNativeFeedback
         disabled={disabled}
@@ -66,7 +66,7 @@ class WechartSection extends Component {
           >
             {title}
           </Text>
-          {this.renderRigthItem()}
+          {rightItem && this.renderRigthItem()}
         </View>
       </TouchableNativeFeedback>
 

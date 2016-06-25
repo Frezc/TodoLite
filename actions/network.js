@@ -2,7 +2,7 @@ import {
   AsyncStorage,
   ToastAndroid
 } from 'react-native'
-import { fetchR, constructQuery, resolveErrorResponse, easyFetch } from '../helpers'
+import { fetchR, constructQuery, resolveErrorResponse, easyFetch, constructBody } from '../helpers'
 import { REFRESH_URL, TODOLIST_URL, UNAUTH_URL, HISTORY_URL, TODO_URL, USER_URL } from '../constants/urls'
 import { APPIDENTITY } from '../constants'
 import {
@@ -338,9 +338,10 @@ export function fetchRefreshUser() {
         })
       }
       resolveErrorResponse(response)
+      return ''
     }).catch(err => {
       ToastAndroid.show(err.message, ToastAndroid.SHORT)
-      reject()
+      return err
     })
   }
 }
@@ -353,7 +354,26 @@ function refreshUser(user) {
 }
 
 export function fetchUpdateUser(params = {}) {
-  return (dispatch) => {
-    return 
+  return (dispatch, getState) => {
+    const token = getState().auth.token
+    return easyFetch(USER_URL, {
+      token: token
+    }, {
+      method: 'post',
+      body: constructBody(params)
+    }).then(response => {
+      if (response.ok) {
+        return response.json().then(json => {
+          dispatch(refreshUser(json))
+          dispatch(saveAuth())
+          ToastAndroid.show('Updated successfully.', ToastAndroid.SHORT)
+        })
+      }
+      resolveErrorResponse(response)
+      return ''
+    }).catch(err => {
+      ToastAndroid.show(err.message, ToastAndroid.SHORT)
+      return err
+    })
   }
 }
