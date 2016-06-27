@@ -196,7 +196,7 @@ class TodoPage extends Component {
       content: (
         <TextInput
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           autoFocus
           defaultValue={this.temp.title}
           maxLength={30}
@@ -282,7 +282,7 @@ class TodoPage extends Component {
       content: (
         <TextInput
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           autoFocus
           defaultValue={this.temp.location}
           maxLength={255}

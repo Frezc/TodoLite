@@ -15,7 +15,8 @@ import Toolbar from '../components/Toolbar'
 import { Colors } from '../assets/Theme'
 import Section from '../components/WechartSection'
 import { connect } from 'react-redux';
-import { showDialog, closeDialog, showConfirmDialog, showLoadingDialog } from '../actions/view'
+import router from '../helpers/router'
+import { showDialog, closeDialog, showConfirmDialog, showLoadingDialog, setDrawerLockMode } from '../actions/view'
 import { fetchRefreshUser, fetchUpdateUser } from '../actions/network'
 
 const ModifiedActions = [{
@@ -27,19 +28,22 @@ const ModifiedActions = [{
 class ProfilePage extends Component {
 
   static propTypes = {
-    avatar: PropTypes.string.isRequired,
-    nickname: PropTypes.string.isRequired,
-    email: PropTypes.string.isRequired,
-    created_at: PropTypes.string.isRequired,
-    todo: PropTypes.number.isRequired,
-    layside: PropTypes.number.isRequired,
-    complete: PropTypes.number.isRequired,
-    abandon: PropTypes.number.isRequired
+    user: PropTypes.shape({
+      avatar: PropTypes.string.isRequired,
+      nickname: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+      created_at: PropTypes.string.isRequired,
+      todo: PropTypes.number.isRequired,
+      layside: PropTypes.number.isRequired,
+      complete: PropTypes.number.isRequired,
+      abandon: PropTypes.number.isRequired
+    }).isRequired,
+    token: PropTypes.string.isRequired
   }
 
   state = {
     loading: false,
-    nickname: this.props.nickname
+    nickname: this.props.user.nickname
   }
 
   temp = {
@@ -75,7 +79,7 @@ class ProfilePage extends Component {
           switch (result) {
             case 'OK':
               this.setState({
-                nickname: this.props.nickname
+                nickname: this.props.user.nickname
               })
               break
           }
@@ -95,7 +99,7 @@ class ProfilePage extends Component {
   }
 
   hasModified = () => {
-    return this.state.nickname !== this.props.nickname
+    return this.state.nickname !== this.props.user.nickname
   }
 
   changeName = () => {
@@ -106,7 +110,7 @@ class ProfilePage extends Component {
       content: (
         <TextInput
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           autoFocus
           defaultValue={this.temp.nickname}
           maxLength={32}
@@ -132,8 +136,19 @@ class ProfilePage extends Component {
     }))
   }
 
-  changePassword = () => {
+  // changePassword = () => {
+  //   this.props.navigator.push(router.changePw)
+  // }
 
+
+  componentDidMount() {
+    const { dispatch, user } = this.props;
+    dispatch(setDrawerLockMode('locked-closed'))
+  }
+
+  componentWillUnmount() {
+    const { dispatch } = this.props;
+    dispatch(setDrawerLockMode('unlocked'))
   }
 
   renderRefreshControl = () => {
@@ -148,7 +163,7 @@ class ProfilePage extends Component {
   }
 
   renderContent() {
-    const { avatar, email, created_at, todo, layside, complete, abandon } = this.props
+    const { avatar, email, created_at, todo, layside, complete, abandon } = this.props.user
 
     return (
       <ScrollView
@@ -187,11 +202,6 @@ class ProfilePage extends Component {
             type: 'text',
             value: created_at
           }}
-        />
-        <Section
-          style={styles.section}
-          title="Change password"
-          onPress={this.changePassword}
         />
         <Section
           style={styles.firstSection}
@@ -259,7 +269,7 @@ const styles = StyleSheet.create({
 
 function select(state, ownProps) {
   return {
-    ...state.auth.user
+    ...state.auth
   }
 }
 

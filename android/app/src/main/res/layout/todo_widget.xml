@@ -36,7 +36,7 @@
                 android:textColor="#fff"/>
             <TextView
                 android:id="@+id/todo_description1"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -45,7 +45,7 @@
                 android:textColor="#fff"/>
             <TextView
                 android:id="@+id/todo_description2"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
                 android:ellipsize="end"

@@ -10,7 +10,7 @@ import { Colors } from '../assets/Theme'
 class Button extends Component {
 
   static propTypes = {
-    // text: PropTypes.string.isRequired,  // string, number
+    text: PropTypes.any.isRequired,  // string, number
     color: PropTypes.string,
     disabled: PropTypes.bool,
     type: PropTypes.oneOf(['flat', 'raise']),

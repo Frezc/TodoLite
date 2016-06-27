@@ -108,8 +108,12 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         views.setTextViewText(R.id.todo_title, todo.title);
         views.setImageViewResource(R.id.todo_typeicon, Constants.typeIcons.get(todo.type));
         List<String> descriptions = getDescriptions(position);
-        views.setTextViewText(R.id.todo_description1, descriptions.get(0));
-        views.setTextViewText(R.id.todo_description2, descriptions.get(1));
+        if (descriptions.size() > 0) {
+            views.setTextViewText(R.id.todo_description1, descriptions.get(0));
+        }
+        if (descriptions.size() > 1) {
+            views.setTextViewText(R.id.todo_description2, descriptions.get(1));
+        }
 
         Bundle extras = new Bundle();
         extras.putString(AppWidgetsEventReceiver.PAYLOAD,

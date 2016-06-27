@@ -36,11 +36,15 @@ class Main extends Component {
       case 1:
         this.navigator.replace(router.history)
         break
+      case 2:
+        this.navigator.push(router.settings)
+        break
       case -1:
         dispatch(logout(token))
+        break
     }
 
-    if (index != -1) {
+    if (index == 0 || index == 1) {
       dispatch(setNavIndex(index))
     }
     this.drawer.closeDrawer()
@@ -65,10 +69,6 @@ class Main extends Component {
     }
 
     return false
-  }
-
-  componentWillMount() {
-    const { dispatch } = this.props;
   }
 
   componentDidMount() {

@@ -155,15 +155,22 @@ export function logout(token) {
     return easyFetch(UNAUTH_URL, {
       token: token
     }).then(response => {
-        dispatch({
-          type: LOGOUT
-        })
-        return dispatch(clearData())
-          .then(err => {
-            // ToastAndroid.show('logout: ' + err, ToastAndroid.SHORT)
-          })
-      }).catch(err => {
-        ToastAndroid.show(err, ToastAndroid.SHORT)
+      if (!response.ok) resolveErrorResponse(response)
+      dispatch(logoutLocal())
+    }).catch(err => {
+      ToastAndroid.show(err, ToastAndroid.SHORT)
+    })
+  }
+}
+
+export function logoutLocal() {
+  return dispatch => {
+    dispatch({
+      type: LOGOUT
+    })
+    return dispatch(clearData())
+      .then(err => {
+        // ToastAndroid.show('logout: ' + err, ToastAndroid.SHORT)
       })
   }
 }

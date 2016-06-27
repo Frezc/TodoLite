@@ -5,8 +5,10 @@ import NeedAuthPage from '../components/NeedAuth'
 import TodoPage from '../containers/TodoPage'
 import EditorPage from '../containers/EditorPage'
 import ProfilePage from '../containers/ProfilePage'
-
-import string from '../constants/string'
+import ChangePasswordPage from '../containers/ChangePasswordPage'
+import SettingsPage from '../containers/SettingsPage'
+import ResetPwPage from '../containers/ResetPwPage'
+import AboutPage from '../containers/AboutPage'
 
 const router = {
   schedule: {
@@ -34,6 +36,18 @@ const router = {
   },
   profile: {
     component: ProfilePage
+  },
+  changePw: {
+    component: ChangePasswordPage
+  },
+  settings: {
+    component: SettingsPage
+  },
+  resetPw: {
+    component: ResetPwPage
+  },
+  about: {
+    component: AboutPage
   }
 }
 

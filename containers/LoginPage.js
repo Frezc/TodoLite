@@ -24,6 +24,7 @@ import TimerMixin from 'react-timer-mixin';
 import isEmail from 'validator/lib/isEmail';
 import isLength from 'validator/lib/isLength';
 import dismissKeyboard from 'dismissKeyboard'
+import router from '../helpers/router'
 
 class LoginPage extends Component {
 
@@ -52,13 +53,13 @@ class LoginPage extends Component {
       ToastAndroid.show('Invalid email address.', ToastAndroid.SHORT)
       return false
     } else if (!isLength(this.state.rePw, { min: 6, max: 32 })) {
-      ToastAndroid.show('Length of PW should between 6 and 32.', ToastAndroid.SHORT)
+      ToastAndroid.show('Length of Password should between 6 and 32.', ToastAndroid.SHORT)
       return false
     } else if (this.state.rePw !== this.state.rePwr) {
-      ToastAndroid.show('Twice PW is different.', ToastAndroid.SHORT)
+      ToastAndroid.show('Confirm Password is different.', ToastAndroid.SHORT)
       return false
     } else if (!isLength(this.state.reName, { min: 1, max: 32 })) {
-      ToastAndroid.show('Length of PW should between 1 and 32', ToastAndroid.SHORT)
+      ToastAndroid.show('Length of name should between 1 and 32', ToastAndroid.SHORT)
       return false
     } else if (!isLength(this.state.reCode, { min: 1 })) {
       ToastAndroid.show('Code can\'t be empty.', ToastAndroid.SHORT)
@@ -100,6 +101,11 @@ class LoginPage extends Component {
     const { dispatch, navigator } = this.props
 
     dismissKeyboard()
+
+    if (!this.state.email || !this.state.password) {
+      ToastAndroid.show('You cannot leave email or password empty.', ToastAndroid.SHORT)
+      return
+    }
 
     this.setState({
       logining: true
@@ -228,6 +234,10 @@ class LoginPage extends Component {
     }
   }
 
+  toResetPw = () => {
+    this.props.navigator.push(router.resetPw)
+  }
+
   componentDidMount() {
     const { dispatch } = this.props;
     dispatch(setDrawerLockMode('locked-closed'))
@@ -250,7 +260,7 @@ class LoginPage extends Component {
           placeholder="EMAIL"
           style={styles.textInput}
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           keyboardType="email-address"
           value={this.state.email}
           onChangeText={text => this.setState({ email: text })}
@@ -262,9 +272,14 @@ class LoginPage extends Component {
           secureTextEntry
           selectTextOnFocus
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           value={this.state.password}
           onChangeText={text => this.setState({ password: text })}
+        />
+        <Button
+          text="Forgot password ?"
+          style={styles.fpBtn}
+          onPress={this.toResetPw}
         />
         <LoadingButton
           text="OK"
@@ -288,9 +303,9 @@ class LoginPage extends Component {
         <TextInput
           placeholder="EMAIL"
           style={styles.textInput}
-          selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
           keyboardType="email-address"
+          selectTextOnFocus
+          selectionColor={Colors.accent100}
           value={this.state.reEmail}
           onChangeText={text => this.setState({ reEmail: text })}
         />
@@ -300,7 +315,7 @@ class LoginPage extends Component {
           secureTextEntry
           selectTextOnFocus
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           value={this.state.rePw}
           onChangeText={text => this.setState({ rePw: text })}
         />
@@ -310,7 +325,7 @@ class LoginPage extends Component {
           secureTextEntry
           selectTextOnFocus
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           value={this.state.rePwr}
           onChangeText={text => this.setState({ rePwr: text })}
         />
@@ -318,7 +333,7 @@ class LoginPage extends Component {
           style={styles.textInput}
           placeholder="NICKNAME"
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           value={this.state.reName}
           onChangeText={text => this.setState({ reName: text })}
         />
@@ -329,7 +344,7 @@ class LoginPage extends Component {
             style={styles.fillParent}
             placeholder="CODE"
             selectionColor={Colors.accent100}
-            underlineColorAndroid={Colors.accent400}
+            // underlineColorAndroid={Colors.accent400}
             value={this.state.reCode}
             onChangeText={text => this.setState({ reCode: text })}
           />
@@ -410,7 +425,11 @@ const styles = StyleSheet.create({
   getCodeButton: {
     width: 80
   },
-  sureBtn: { marginTop: 32 }
+  sureBtn: { marginTop: 32 },
+  fpBtn: {
+    width: 130,
+    alignSelf: 'flex-start'
+  }
 })
 
 function select(state, ownProps) {
