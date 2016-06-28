@@ -7,7 +7,6 @@ import {
   DrawerLayoutAndroid,
   Navigator,
   BackAndroid,
-  DeviceEventEmitter,
   ToastAndroid
 } from 'react-native';
 import { connect } from 'react-redux';

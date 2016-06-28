@@ -5,11 +5,7 @@ import {
   View,
   ScrollView,
   TextInput,
-  TouchableNativeFeedback,
-  Navigator,
-  Picker,
   ToastAndroid,
-  BackAndroid,
   RefreshControl
 } from 'react-native';
 import { Colors, statusColors } from '../assets/Theme'
@@ -28,7 +24,7 @@ import { refreshTodo, addTodo, showDialog,
 import { completeTodo, abandonTodo, laysideTodo, recoverTodo } from '../actions/network'
 import { connect } from 'react-redux';
 import router from '../helpers/router'
-import { formatDate, fetchR, resolveErrorResponse, easyFetch } from '../helpers'
+import { formatDateNormal, fetchR, resolveErrorResponse, easyFetch } from '../helpers'
 import TabBar from '../components/TabBar'
 import Page from './ToolbarPage'
 
@@ -813,7 +809,7 @@ class TodoPage extends Page {
         <Divider style={styles.divider} />
         <Section
           text="Start at"
-          secondText={start_at ? formatDate(start_at) : 'Not set'}
+          secondText={start_at ? formatDateNormal(start_at) : 'Not set'}
           iconName="access-time"
           onPress={this.setStartAt}
           onLongPress={() => start_at && this.showDateMenu('start_at')}
@@ -821,7 +817,7 @@ class TodoPage extends Page {
         />
         <Section
           text="Deadline"
-          secondText={deadline ? formatDate(deadline) : 'Not set'}
+          secondText={deadline ? formatDateNormal(deadline) : 'Not set'}
           iconName="alarm"
           onPress={this.setDeadline}
           onLongPress={() => deadline && this.showDateMenu('deadline')}
@@ -830,7 +826,7 @@ class TodoPage extends Page {
         {end_at &&
           <Section
             text="End at"
-            secondText={formatDate(end_at)}
+            secondText={formatDateNormal(end_at)}
             iconName="alarm-on"
           />
         }

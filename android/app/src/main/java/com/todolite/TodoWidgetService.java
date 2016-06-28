@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+import android.widget.Toast;
 
 import com.facebook.react.modules.storage.ReactDatabaseSupplier;
 import com.google.gson.Gson;
@@ -78,16 +80,21 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     }
 
     private String queryFromDB(SQLiteDatabase db, String key) {
-        Cursor c = db.rawQuery("select * from " + TABLE_CATALYST + " where " + KEY_COLUMN + " = ?",
-                new String[]{key});
-        if (c.getCount() > 0) {
-            c.moveToFirst();
-            String result = c.getString(c.getColumnIndex(VALUE_COLUMN));
-            c.close();
-            return result;
+        // try-with-resource need min-api 19
+        Cursor c = null;
+        try {
+            c = db.rawQuery("select * from " + TABLE_CATALYST + " where " + KEY_COLUMN + " = ?",
+                    new String[]{key});
+            if (c.getCount() > 0) {
+                c.moveToFirst();
+                String result = c.getString(c.getColumnIndex(VALUE_COLUMN));
+                c.close();
+                return result;
+            }
+        } catch (SQLiteException ignored) {
+        } finally {
+            if (c != null) c.close();
         }
-
-        c.close();
         return "";
     }
 
@@ -150,7 +157,7 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         StringBuilder sb = new StringBuilder();
         Calendar calendar = Calendar.getInstance();
         int nowSec = (int) (calendar.getTimeInMillis() / 1000);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd h:mm:ss a");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd h:mm a");
         if (todo.startAt != 0 && nowSec < todo.startAt) {
             calendar.setTimeInMillis((long)todo.startAt * 1000);
             sb.append("Start at: ").append(format.format(calendar.getTime()));

@@ -3,10 +3,7 @@ import {
   StyleSheet,
   View,
   Text,
-  ScrollView,
-  TouchableNativeFeedback,
-  ListView,
-  RefreshControl
+  TouchableNativeFeedback
 } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialIcons'
 import { TypeIcon } from '../constants'

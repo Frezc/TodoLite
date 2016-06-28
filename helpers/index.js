@@ -131,12 +131,41 @@ export function constructBody(params = {}) {
   return formData
 }
 
+const SECOND_TIME = 1000
+const MINUTE_TIME = 60 * 1000
+const HOUR_TIME = 60 * MINUTE_TIME
+const DAY_TIME = 24 * HOUR_TIME
+const MONTH_TIME = 30 * DAY_TIME
+
 /**
  * format date to string
- * todo: 优化 ，可以显示xx时间前
  * @param date
  */
 export function formatDate(date) {
+  const now = Date.now()
+  const target = date.getTime()
+  const offset = Math.abs(target - now)
+  const chrono = now > target ? 'ago' : 'after'
+  if (offset < MINUTE_TIME) {
+    return `${Math.floor(offset / SECOND_TIME)} sec ${chrono}`
+  } else if (offset < HOUR_TIME) {
+    return `${Math.floor(offset / MINUTE_TIME)} min ${chrono}`
+  } else if (offset < DAY_TIME) {
+    return `${Math.floor(offset / HOUR_TIME)} h ${chrono}`
+  } else if (offset < MONTH_TIME) {
+    return `${Math.floor(offset / DAY_TIME)} day ${chrono}`
+  }
+
+
+  return formatDateNormal(date)
+}
+
+/**
+ * format date with yyyy-MM-dd hh:mm a
+ * @param date
+ * @returns {string}
+ */
+export function formatDateNormal(date) {
   const year = date.getFullYear()
   const month = `0${date.getMonth() + 1}`.slice(-2)
   const day = `0${date.getDate()}`.slice(-2)
