@@ -13,7 +13,6 @@ import {
   RefreshControl
 } from 'react-native';
 import { Colors, statusColors } from '../assets/Theme'
-import Toolbar from '../components/Toolbar'
 import Subheader from '../components/Subheader'
 import Divider from '../components/Divider'
 import Section from '../components/MultiLinesSection'
@@ -24,13 +23,14 @@ import { TODO_URL } from '../constants/urls'
 import SelectableList from '../components/SelectableList'
 import SliderWithIndicator from '../components/SliderWithIndicator'
 import DatePicker from '../components/DatePicker'
-import { setDrawerLockMode, refreshTodo, addTodo, showDialog,
-  showLoadingDialog, showConfirmDialog, closeDialog } from '../actions/view'
+import { refreshTodo, addTodo, showDialog,
+  showLoadingDialog, showConfirmDialog } from '../actions/view'
 import { completeTodo, abandonTodo, laysideTodo, recoverTodo } from '../actions/network'
 import { connect } from 'react-redux';
 import router from '../helpers/router'
 import { formatDate, fetchR, resolveErrorResponse, easyFetch } from '../helpers'
 import TabBar from '../components/TabBar'
+import Page from './ToolbarPage'
 
 const TypeDialogList = Object.keys(TypeIcon).map(type => {
   return {
@@ -51,7 +51,7 @@ const CreateActions = [{
   title: 'Done', iconName: 'done', show: 'always', iconColor: 'white'
 }]
 
-class TodoPage extends Component {
+class TodoPage extends Page {
 
   static propTypes = {
     type: PropTypes.oneOf(['create', 'edit', 'show']).isRequired,
@@ -155,8 +155,8 @@ class TodoPage extends Component {
     return {
       title,
       type,
-      start_at: start_at ? start_at.getTime() / 1000 : 0,
-      deadline: deadline ? deadline.getTime() / 1000 : 0,
+      start_at: start_at ? Math.floor(start_at.getTime() / 1000) : 0,
+      deadline: deadline ? Math.floor(deadline.getTime() / 1000) : 0,
       priority,
       location,
       contents: JSON.stringify(contents)
@@ -167,6 +167,7 @@ class TodoPage extends Component {
     const { token } = this.props
 
     const rd = this.getData()
+    // ToastAndroid.show(JSON.stringify(rd), ToastAndroid.LONG)
     const formData = new FormData()
     // value不能为null
     for(const key of Object.keys(rd)) {
@@ -175,19 +176,7 @@ class TodoPage extends Component {
     formData.append('token', token)
     return formData
   }
-
-  getTitle = () => {
-    const { type } = this.props
-    switch (type) {
-      case 'create':
-        return 'Create new todo'
-      case 'edit':
-        return 'Edit todo'
-      case 'show':
-        return 'Todo detail'
-    }
-  }
-
+  
   showTitleDialog = () => {
     const { dispatch } = this.props
     this.temp.title = this.state.title
@@ -294,6 +283,17 @@ class TodoPage extends Component {
         text: 'CANCEL',
         onPress: this.onCloseDialog
       }, {
+        text: 'CLEAR',
+        onPress: () => {
+          if (this.state.location) {
+            this.setState({
+              modified: true,
+              location: ''
+            })
+          }
+          this.onCloseDialog()
+        }
+      }, {
         text: 'OK',
         onPress: () => {
           if (this.state.location != this.temp.location) {
@@ -330,6 +330,7 @@ class TodoPage extends Component {
   }
 
   setStartAt = () => {
+    // MUST generate a new object
     if (this.state.start_at) {
       this.temp.start_at = new Date(this.state.start_at)
     } else {
@@ -554,12 +555,8 @@ class TodoPage extends Component {
     this.onCloseDialog()
   }
 
-  onCloseDialog = () => {
-    this.props.dispatch(closeDialog())
-  }
-
-  onBackPress = () => {
-    const { navigator, dispatch, type } = this.props
+  onIconClicked = () => {
+    const { navigator, dispatch } = this.props
 
     if (this.state.modified) {
       dispatch(showConfirmDialog('Exit', 'Your unsaved data will be lost.', result => {
@@ -704,15 +701,30 @@ class TodoPage extends Component {
       contents
     })
   }
-
-  componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(setDrawerLockMode('locked-closed'))
+  
+  getTitle = () => {
+    const { type } = this.props
+    switch (type) {
+      case 'create':
+        return 'Create new todo'
+      case 'edit':
+        return 'Edit todo'
+      case 'show':
+        return 'Todo detail'
+    }
   }
 
-  componentWillUnmount() {
-    const { dispatch } = this.props;
-    dispatch(setDrawerLockMode('unlocked'))
+  getActions = () => {
+    const { type } = this.props
+    const { modified } = this.state
+    switch (type) {
+      case 'create':
+        return modified ? CreateActions : []
+      case 'edit':
+        return modified ? ModifiedActions : []
+    }
+
+    return []
   }
 
   renderRefreshControl = () => {
@@ -731,20 +743,8 @@ class TodoPage extends Component {
     return null
   }
 
-  renderToolbarActions = () => {
-    const { type } = this.props
-    const { modified } = this.state
-    switch (type) {
-      case 'create':
-        return modified ? CreateActions : []
-      case 'edit':
-        return modified ? ModifiedActions : []
-    }
-
-    return []
-  }
-
   renderActions() {
+    if (this.props.type !== 'edit') return null
     const { status } = this.state
     const menuStatus = ['complete', 'abandon']
     if (status == 'todo') {
@@ -776,7 +776,7 @@ class TodoPage extends Component {
     )
   }
 
-  renderContent() {
+  renderContents() {
     const { title, type, status, priority, start_at, deadline, end_at, location, contents } = this.state
     const pType = this.props.type
 
@@ -816,7 +816,7 @@ class TodoPage extends Component {
           secondText={start_at ? formatDate(start_at) : 'Not set'}
           iconName="access-time"
           onPress={this.setStartAt}
-          onLongPress={() => this.showDateMenu('start_at')}
+          onLongPress={() => start_at && this.showDateMenu('start_at')}
           disabled={pType === 'show'}
         />
         <Section
@@ -824,7 +824,7 @@ class TodoPage extends Component {
           secondText={deadline ? formatDate(deadline) : 'Not set'}
           iconName="alarm"
           onPress={this.setDeadline}
-          onLongPress={() => this.showDateMenu('deadline')}
+          onLongPress={() => deadline && this.showDateMenu('deadline')}
           disabled={pType === 'show'}
         />
         {end_at &&
@@ -875,25 +875,6 @@ class TodoPage extends Component {
       </ScrollView>
     )
   }
-
-  render() {
-    const { type } = this.props
-
-    return (
-      <View style={styles.fillParent}>
-        <Toolbar
-          navIconName="arrow-back"
-          title={this.getTitle()}
-          onIconClicked={this.onBackPress}
-          actions={this.renderToolbarActions()}
-          onActionSelected={this.onActionSelected}
-        />
-        {this.renderContent()}
-        {type == 'edit' && this.renderActions()}
-      </View>
-    )
-  }
-
 }
 
 const styles = StyleSheet.create({

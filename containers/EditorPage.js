@@ -86,7 +86,7 @@ class EditorPage extends Component {
         <TextInput
           style={[styles.input, { height: height }]}
           selectionColor={Colors.accent100}
-          underlineColorAndroid={Colors.accent400}
+          // underlineColorAndroid={Colors.accent400}
           multiline
           // numberOfLines={12}
           value={value}

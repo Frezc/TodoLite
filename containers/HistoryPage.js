@@ -10,18 +10,18 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Colors } from '../assets/Theme'
-import Toolbar from '../components/Toolbar'
 import TodoSection from '../components/TodoSection'
 import router from '../helpers/router'
 import NeedAuth from '../components/NeedAuth'
 import { 
-  showDialog, closeDialog, setStatusFilter, setTypeFilter, setSearchText,
+  showDialog, setStatusFilter, setTypeFilter, setSearchText,
   setYear, pageReady
 } from '../actions/view'
 import { fetchHistoryNetwork, fetchHistoryLocal } from '../actions/network'
 import { StatusText, TypeText, yearPickerItems } from '../constants'
 import ListFilterContainer from './ListFilterContainer'
 import Picker from '../components/UncPicker'
+import Page from './ToolbarPage'
 
 const statusList = [{
   text: 'All'
@@ -46,7 +46,7 @@ const actions = [{
   title: 'calendar', iconName: 'date-range', show: 'always', iconColor: 'white'
 }]
 
-class HistoryPage extends Component {
+class HistoryPage extends Page {
 
   static propTypes = {
     token: PropTypes.string,
@@ -105,10 +105,6 @@ class HistoryPage extends Component {
   onRefresh = (props = this.props) => {
     const { dispatch, token, year } = props
     dispatch(fetchHistoryNetwork(token, year, this.getParams(props)))
-  }
-
-  onCloseDialog = () => {
-    this.props.dispatch(closeDialog())
   }
 
   onSetSearchText = text => {
@@ -191,6 +187,18 @@ class HistoryPage extends Component {
     }
   }
 
+  getPageType() {
+    return 'root'
+  }
+
+  getTitle() {
+    return `History of ${this.props.year}`
+  }
+
+  getActions() {
+    return actions
+  }
+
   componentWillReceiveProps(nextProps) {
     const { data, statusFilter, searchText, typeFilter, year } = this.props
     if (data !== nextProps.data) {
@@ -270,43 +278,36 @@ class HistoryPage extends Component {
     }
   }
 
-  render() {
-    const { openDrawer, token, loading, navigator, year } = this.props
+  renderContents() {
+    const { token, loading, navigator } = this.props
 
-    return (
-      <View style={{ flex: 1 }}>
-        <Toolbar
-          navIconName="menu"
-          title={`History of ${year}`}
-          onIconClicked={openDrawer}
-          actions={actions}
-          onActionSelected={this.onActionSelected}
-        />
-        {token ?
-          <ListView
-            style={{ backgroundColor: 'white' }}
-            dataSource={this.state.dataSource}
-            enableEmptySections
-            refreshControl={
+    if (token) {
+      return (
+        <ListView
+          style={{ backgroundColor: 'white' }}
+          dataSource={this.state.dataSource}
+          enableEmptySections
+          refreshControl={
               <RefreshControl
                 colors={[Colors.accent100, Colors.accent200, Colors.accent400]}
                 refreshing={loading}
                 onRefresh={this.onRefresh}
               />
             }
-            onEndReachedThreshold={100}
-            onEndReached={this.onEndReached}
-            renderHeader={this.renderHeader}
-            renderFooter={this.renderFooter}
-            renderRow={this.renderSection}
-          />
-          :
-          <NeedAuth
-            navigator={navigator}
-          />
-        }
-      </View>
-    )
+          onEndReachedThreshold={100}
+          onEndReached={this.onEndReached}
+          renderHeader={this.renderHeader}
+          renderFooter={this.renderFooter}
+          renderRow={this.renderSection}
+        />
+      )
+    } else {
+      return (
+        <NeedAuth
+          navigator={navigator}
+        />
+      )
+    }
   }
 }
 

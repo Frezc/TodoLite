@@ -12,7 +12,6 @@ import {
   TextInput
 } from 'react-native';
 import { connect } from 'react-redux';
-import Toolbar from '../components/Toolbar'
 import { Colors } from '../assets/Theme'
 import LoadingButton from '../components/LoadingButton'
 import isLength from 'validator/lib/isLength'
@@ -31,11 +30,15 @@ class ChangePasswordPage extends Page {
   }
 
   checkInput = () => {
-    const { oldPassword, newPassword, rNewPassword } = this.props
-    if (!isLength(this.state.newPassword, { min: 6, max: 32 })) {
+    const { oldPassword, newPassword, rNewPassword } = this.state
+    if (!isLength(oldPassword, { min: 6, max: 32 })) {
+      ToastAndroid.show('Please fill your old password correctly.', ToastAndroid.SHORT)
+      return false
+    }
+    if (!isLength(newPassword, { min: 6, max: 32 })) {
       ToastAndroid.show('Length of Password should between 6 and 32.', ToastAndroid.SHORT)
       return false
-    } else if (this.state.newPassword !== this.state.rNewPassword) {
+    } else if (newPassword !== rNewPassword) {
       ToastAndroid.show('Confirm Password is different.', ToastAndroid.SHORT)
       return false
     }

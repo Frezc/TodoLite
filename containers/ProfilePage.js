@@ -11,13 +11,12 @@ import {
   ScrollView,
   TextInput
 } from 'react-native';
-import Toolbar from '../components/Toolbar'
 import { Colors } from '../assets/Theme'
 import Section from '../components/WechartSection'
 import { connect } from 'react-redux';
-import router from '../helpers/router'
-import { showDialog, closeDialog, showConfirmDialog, showLoadingDialog, setDrawerLockMode } from '../actions/view'
+import { showDialog, showConfirmDialog, showLoadingDialog } from '../actions/view'
 import { fetchRefreshUser, fetchUpdateUser } from '../actions/network'
+import Page from './ToolbarPage'
 
 const ModifiedActions = [{
   title: 'Revert', iconName: 'undo', show: 'always', iconColor: 'white'
@@ -25,7 +24,7 @@ const ModifiedActions = [{
   title: 'Save', iconName: 'save', show: 'always', iconColor: 'white'
 }]
 
-class ProfilePage extends Component {
+class ProfilePage extends Page {
 
   static propTypes = {
     user: PropTypes.shape({
@@ -61,14 +60,6 @@ class ProfilePage extends Component {
           loading: false
         })
       })
-  }
-
-  onBackPress = () => {
-    this.props.navigator.pop()
-  }
-
-  onCloseDialog = () => {
-    this.props.dispatch(closeDialog())
   }
 
   onActionSelected = index => {
@@ -136,19 +127,12 @@ class ProfilePage extends Component {
     }))
   }
 
-  // changePassword = () => {
-  //   this.props.navigator.push(router.changePw)
-  // }
-
-
-  componentDidMount() {
-    const { dispatch, user } = this.props;
-    dispatch(setDrawerLockMode('locked-closed'))
+  getTitle() {
+    return 'Profile'
   }
 
-  componentWillUnmount() {
-    const { dispatch } = this.props;
-    dispatch(setDrawerLockMode('unlocked'))
+  getActions = () => {
+    return this.hasModified() ? ModifiedActions : []
   }
 
   renderRefreshControl = () => {
@@ -162,7 +146,7 @@ class ProfilePage extends Component {
     )
   }
 
-  renderContent() {
+  renderContents() {
     const { avatar, email, created_at, todo, layside, complete, abandon } = this.props.user
 
     return (
@@ -236,21 +220,6 @@ class ProfilePage extends Component {
           }}
         />
       </ScrollView>
-    )
-  }
-
-  render() {
-    return (
-      <View style={styles.fillParent}>
-        <Toolbar
-          navIconName="arrow-back"
-          title={'Profile'}
-          onIconClicked={this.onBackPress}
-          actions={this.hasModified() ? ModifiedActions : []}
-          onActionSelected={this.onActionSelected}
-        />
-        {this.renderContent()}
-      </View>
     )
   }
 }

@@ -104,7 +104,6 @@ class NavigationView extends Component {
         {this.renderSection('md-calendar', 'History', 1)}
         {userInfo && this.renderDivider()}
         {userInfo && this.renderSection('md-settings', 'Settings', 2)}
-        {userInfo && this.renderSection('md-exit', 'Logout', -1)}
       </View>
     );
   }

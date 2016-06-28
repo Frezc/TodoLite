@@ -15,19 +15,21 @@ import { Colors } from '../assets/Theme'
 import NavigationView from '../components/NavigationView'
 import router from '../helpers/router'
 import { setNavIndex } from '../actions/view'
-import { logout } from '../actions/network'
 import { swipeWithoutGestures } from '../constants/sceneConfigure'
 import DialogCover from '../components/DialogCover'
-import AppWidgets from '../libs/AppWidgets'
+import reactMixin from 'react-mixin'
+import TimerMixin from 'react-timer-mixin'
 
 class Main extends Component {
+
+  canExit = false
 
   openDrawer = () => {
     this.drawer.openDrawer()
   }
 
   onNavItemPress = (index, title) => {
-    const { dispatch, token } = this.props
+    const { dispatch } = this.props
 
     switch (index) {
       case 0:
@@ -38,9 +40,6 @@ class Main extends Component {
         break
       case 2:
         this.navigator.push(router.settings)
-        break
-      case -1:
-        dispatch(logout(token))
         break
     }
 
@@ -66,9 +65,14 @@ class Main extends Component {
     if (currentRoutes.length > 1) {
       this.navigator.pop()
       return true
+    } else if (this.canExit) {
+      return false
+    } else {
+      ToastAndroid.show('Press back again to exit app.', ToastAndroid.SHORT)
+      this.canExit = true
+      this.setTimeout(() => this.canExit = false, 2000)
+      return true
     }
-
-    return false
   }
 
   componentDidMount() {
@@ -143,6 +147,8 @@ class Main extends Component {
     );
   }
 }
+
+reactMixin(Main.prototype, TimerMixin)
 
 const styles = StyleSheet.create({
   

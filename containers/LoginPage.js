@@ -13,20 +13,19 @@ import ViewPagerIndicator from '../components/ViewPagerIndicator'
 import LoadingButton from '../components/LoadingButton'
 import Button from '../components/Button'
 import { Colors } from '../assets/Theme'
-import Toolbar from '../components/Toolbar'
-import { setDrawerLockMode } from '../actions/view'
-import { authSuccess, fetchScheduleNetwork, fetchHistoryNetwork } from '../actions/network'
+import { authSuccess, fetchScheduleNetwork } from '../actions/network'
 import { AUTH_URL, SENDEMAIL_URL, REGISTER_URL } from '../constants/urls'
 import { APPIDENTITY } from '../constants'
 import { fetchR, resolveErrorResponse, easyFetch } from '../helpers'
 import reactMixin from 'react-mixin'
-import TimerMixin from 'react-timer-mixin';
-import isEmail from 'validator/lib/isEmail';
-import isLength from 'validator/lib/isLength';
+import TimerMixin from 'react-timer-mixin'
+import isEmail from 'validator/lib/isEmail'
+import isLength from 'validator/lib/isLength'
 import dismissKeyboard from 'dismissKeyboard'
 import router from '../helpers/router'
+import Page from './ToolbarPage'
 
-class LoginPage extends Component {
+class LoginPage extends Page {
 
   state = {
     pageOffset: 0,
@@ -89,12 +88,6 @@ class LoginPage extends Component {
 
   onIndicatorPress = (index, title) => {
     this.viewPager.setPage(index);
-  }
-  
-  onBackPress = () => {
-    const { navigator } = this.props
-    
-    navigator.pop()
   }
 
   onLogin = () => {
@@ -238,14 +231,8 @@ class LoginPage extends Component {
     this.props.navigator.push(router.resetPw)
   }
 
-  componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(setDrawerLockMode('locked-closed'))
-  }
-
-  componentWillUnmount() {
-    const { dispatch } = this.props;
-    dispatch(setDrawerLockMode('unlocked'))
+  getTitle() {
+    return 'Todo Lite'
   }
 
   renderLoginPage() {
@@ -364,16 +351,10 @@ class LoginPage extends Component {
       </ScrollView>
     )
   }
-  
-  render() {
-    
+
+  renderContents() {
     return (
       <View style={styles.fillParent}>
-        <Toolbar
-          navIconName="arrow-back"
-          title={'Todo Lite'}
-          onIconClicked={this.onBackPress}
-        />
         <ViewPagerIndicator
           titles={['LOGIN', 'REGISTER']}
           onPress={this.onIndicatorPress}
@@ -393,7 +374,7 @@ class LoginPage extends Component {
           </View>
         </ViewPagerAndroid>
       </View>
-    );
+    )
   }
 }
 

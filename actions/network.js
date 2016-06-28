@@ -149,16 +149,13 @@ function fetchScheduleSuccess(json) {
 /**
  * 退出登录
  */
-export function logout(token) {
-  return dispatch => {
+export function logout() {
+  return (dispatch, getState) => {
+    const token = getState().auth.token
     // return fetchR(`${UNAUTH_URL}?app=${APPIDENTITY}&token=${token}`)
+    dispatch(logoutLocal())
     return easyFetch(UNAUTH_URL, {
-      token: token
-    }).then(response => {
-      if (!response.ok) resolveErrorResponse(response)
-      dispatch(logoutLocal())
-    }).catch(err => {
-      ToastAndroid.show(err, ToastAndroid.SHORT)
+      token
     })
   }
 }

@@ -8,19 +8,18 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import { Colors } from '../assets/Theme'
-import Toolbar from '../components/Toolbar'
 import TodoSection from '../components/TodoSection'
 import router from '../helpers/router'
 import NeedAuth from '../components/NeedAuth'
 import { fetchScheduleNetwork, fetchSchedule } from '../actions/network'
 import { 
-  showDialog, closeDialog, setStatusFilter, setTypeFilter, setSearchText,
-  pageReady
+  setStatusFilter, setTypeFilter, setSearchText, pageReady
 } from '../actions/view'
 import { saveSchedule } from '../actions/data'
-import { StatusText, TypeText, PAGE_ITEMS } from '../constants'
+import { StatusText, TypeText } from '../constants'
 import ListFilterContainer from './ListFilterContainer'
 import AppWidgets from '../libs/AppWidgets'
+import Page from './ToolbarPage'
 
 const actions = [{
   title: 'Add Todo', iconName: 'add', show: 'always', iconColor: 'white'
@@ -44,7 +43,7 @@ for (const type of types) {
   })
 }
 
-class SchedulePage extends Component {
+class SchedulePage extends Page {
 
   static propsTypes = {
     token: PropTypes.string,
@@ -145,10 +144,6 @@ class SchedulePage extends Component {
     })
   }
 
-  onCloseDialog = () => {
-    this.props.dispatch(closeDialog())
-  }
-
   onSetSearchText = text => {
     const { dispatch } = this.props
     dispatch(setSearchText('schedulePage', text))
@@ -202,13 +197,25 @@ class SchedulePage extends Component {
 
   appWidgetClick = event => {
     if (event.action == AppWidgets.APPWIDGET_CLICK) {
-      ToastAndroid.show(`You press todo id: ${event.payload.id} action: ${event.action}`, ToastAndroid.LONG)
+      // ToastAndroid.show(`You press todo id: ${event.payload.id} action: ${event.action}`, ToastAndroid.LONG)
       this.onSectionPress(event.payload.id)
     }
   }
 
+  getPageType() {
+    return 'root'
+  }
+
+  getTitle() {
+    return 'Schedule'
+  }
+
+  getActions = () => {
+    const { token } = this.props
+    return token ? actions : []
+  }
+
   componentWillReceiveProps(nextProps) {
-    
     this.setState({
       dataSource: this.state.dataSource.cloneWithRows(this.generateData(nextProps))
     })
@@ -270,42 +277,34 @@ class SchedulePage extends Component {
       />
     )
   }
-  
-  render() {
-    const { openDrawer, token, loading, navigator } = this.props
 
-    return (
-      // flex: 1 缺少ListView会无法滚动
-      <View style={{ flex: 1 }}>
-        <Toolbar
-          navIconName="menu"
-          title={'Schedule'}
-          onIconClicked={openDrawer}
-          actions={token ? actions : []}
-          onActionSelected={this.onActionSelected}
-        />
-        {token ?
-          <ListView
-            style={{ backgroundColor: 'white' }}
-            dataSource={this.state.dataSource}
-            enableEmptySections
-            refreshControl={
+  renderContents() {
+    const { token, loading, navigator } = this.props
+
+    if (token) {
+      return (
+        <ListView
+          style={{ backgroundColor: 'white' }}
+          dataSource={this.state.dataSource}
+          enableEmptySections
+          refreshControl={
               <RefreshControl
                 colors={[Colors.accent100, Colors.accent200, Colors.accent400]}
                 refreshing={loading}
                 onRefresh={this.onRefresh}
               />
             }
-            renderHeader={this.renderHeader}
-            renderRow={this.renderSection}
-          />
-          :
-          <NeedAuth
-            navigator={navigator}
-          />
-        }
-      </View>
-    )
+          renderHeader={this.renderHeader}
+          renderRow={this.renderSection}
+        />
+      )
+    } else {
+      return (
+        <NeedAuth
+          navigator={navigator}
+        />
+      )
+    }
   }
 }
 

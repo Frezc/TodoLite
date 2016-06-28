@@ -7,6 +7,7 @@ import Page from './ToolbarPage'
 import { connect } from 'react-redux'
 import Section from '../components/WechartSection'
 import router from '../helpers/router'
+import { logout } from '../actions/network'
 
 class SettingsPage extends Page {
 
@@ -17,6 +18,12 @@ class SettingsPage extends Page {
 
   toAbout = () => {
     this.props.navigator.push(router.about)
+  }
+
+  toLogout = () => {
+    const { dispatch, navigator } = this.props
+    dispatch(logout())
+    navigator.pop()
   }
 
   getTitle = () => {
@@ -36,6 +43,11 @@ class SettingsPage extends Page {
           title="About"
           onPress={this.toAbout}
         />
+        <Section
+          style={styles.section}
+          title="Logout"
+          onPress={this.toLogout}
+        />
       </ScrollView>
     )
   }
@@ -47,6 +59,9 @@ const styles = StyleSheet.create({
   },
   firstSection: {
     marginTop: 8
+  },
+  section: {
+    marginTop: 1
   }
 })
 
