@@ -21,7 +21,8 @@ class TodoSection extends Component {
       start_at: PropTypes.number,
       deadline: PropTypes.number,
       location: PropTypes.string,
-      created_at: PropTypes.string
+      created_at: PropTypes.string,
+      end_at: PropTypes.number
     }).isRequired,
     onPress: PropTypes.func
   }
@@ -37,14 +38,20 @@ class TodoSection extends Component {
   }
 
   getSecondText = () => {
-    const { start_at, location, deadline, created_at } = this.props.data
+    const { start_at, location, deadline, created_at, end_at, status } = this.props.data
     let text = []
-    location && text.push(`Location: ${location}`)
-    deadline != 0 && text.push(`Deadline: ${formatDate(new Date(deadline * 1000))}`)
-    start_at != 0 && text.length < 2 && text.push(`Start at: ${formatDate(new Date(start_at * 1000))}`)
-    if (text.length == 0) {
-      text.push(`Created at: ${created_at}`)
+
+    if (status === 'complete' || status === 'abandon') {
+      text.push(`End at: ${formatDate(new Date(end_at * 1000))}`)
+    } else {
+      location && text.push(`Location: ${location}`)
+      deadline != 0 && text.length < 2 && text.push(`Deadline: ${formatDate(new Date(deadline * 1000))}`)
+      start_at != 0 && text.length < 2 && text.push(`Start at: ${formatDate(new Date(start_at * 1000))}`)
+      if (text.length == 0) {
+        text.push(`Created at: ${created_at}`)
+      }
     }
+
     return text.join(', ')
   }
 

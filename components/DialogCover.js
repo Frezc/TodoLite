@@ -168,6 +168,7 @@ class DialogCover extends Component {
         onRequestClose={this.onRequestClose}
         visible={visible}
         transparent
+        animationType="fade"
       >
         <TouchableWithoutFeedback onPress={this.onRequestClose}>
           <View style={[styles.root, { height: height - 24, width: width }]}>

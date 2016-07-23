@@ -115,7 +115,7 @@ class LoginPage extends Page {
     }).then(response => {
       if (response.ok) {
         response.json().then(json => {
-          ToastAndroid.show(json.token, ToastAndroid.SHORT);
+          // ToastAndroid.show(json.token, ToastAndroid.SHORT);
           dispatch(authSuccess(json))
           
           // 登陆成功后获取数据
@@ -136,7 +136,7 @@ class LoginPage extends Page {
       this.setState({
         logining: false
       })
-      ToastAndroid.show(error, ToastAndroid.SHORT);
+      ToastAndroid.show(error.message, ToastAndroid.SHORT);
     })
   }
 
@@ -176,7 +176,7 @@ class LoginPage extends Page {
           }, 1000)
         })
         .catch(err => {
-          ToastAndroid.show(err, ToastAndroid.SHORT)
+          ToastAndroid.show(err.message, ToastAndroid.SHORT)
           this.setState({
             getCodeDisable: false
           })
@@ -219,7 +219,7 @@ class LoginPage extends Page {
           registering: false
         })
       }).catch(err => {
-        ToastAndroid.show(err, ToastAndroid.SHORT)
+        ToastAndroid.show(err.message, ToastAndroid.SHORT)
         this.setState({
           registering: false
         })

@@ -51,7 +51,7 @@ export function refreshToken(token) {
     }).then(response => {
         if (response.ok) {
           response.json().then(json => {
-            ToastAndroid.show('refresh success: ' + JSON.stringify(json), ToastAndroid.SHORT)
+            // ToastAndroid.show('refresh success: ' + JSON.stringify(json), ToastAndroid.SHORT)
             dispatch(authSuccess(json))
           })
         } else {
@@ -99,7 +99,7 @@ export function fetchScheduleNetwork(token) {
       }
       dispatch(setPageLoading('schedulePage', false))
     }).catch(err => {
-      ToastAndroid.show(err, ToastAndroid.SHORT)
+      ToastAndroid.show(err.message, ToastAndroid.SHORT)
       dispatch(setPageLoading('schedulePage', false))
     })
   }

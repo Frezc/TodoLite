@@ -29,7 +29,7 @@ export function fetchR(url, params) {
           resolve(response);
         })
         .catch(error => {
-          ToastAndroid.show(retry + ' ' + error.message, ToastAndroid.SHORT)
+          // ToastAndroid.show(retry + ' ' + error.message, ToastAndroid.SHORT)
 
           if (retry > 1) {
             setTimeout(() => {
