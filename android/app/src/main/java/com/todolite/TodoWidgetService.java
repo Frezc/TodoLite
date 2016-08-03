@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 import android.widget.Toast;
@@ -115,11 +116,38 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         views.setTextViewText(R.id.todo_title, todo.title);
         views.setImageViewResource(R.id.todo_typeicon, Constants.typeIcons.get(todo.type));
         List<String> descriptions = getDescriptions(position);
+
+        switch (descriptions.size()) {
+            case 0:
+                views.setViewVisibility(R.id.todo_twoLinesDescription, View.GONE);
+                views.setViewVisibility(R.id.todo_singleDescription, View.VISIBLE);
+                views.setTextViewText(R.id.todo_singleDescription, "No description.");
+                break;
+            case 1:
+                views.setViewVisibility(R.id.todo_twoLinesDescription, View.GONE);
+                views.setViewVisibility(R.id.todo_singleDescription, View.VISIBLE);
+                views.setTextViewText(R.id.todo_singleDescription, descriptions.get(0));
+                break;
+            default:
+                views.setViewVisibility(R.id.todo_twoLinesDescription, View.VISIBLE);
+                views.setViewVisibility(R.id.todo_singleDescription, View.GONE);
+                views.setTextViewText(R.id.todo_description1, descriptions.get(0));
+                views.setTextViewText(R.id.todo_description2, descriptions.get(1));
+        }
+
         if (descriptions.size() > 0) {
+            Log.i("todo", descriptions.get(0));
             views.setTextViewText(R.id.todo_description1, descriptions.get(0));
+        } else {
+            // 由于layout template里改变属性时会影响到其他项，所以这里必须重置。
+            views.setTextViewText(R.id.todo_description1, "No description.");
         }
         if (descriptions.size() > 1) {
+            Log.i("todo", descriptions.get(1));
+            views.setTextViewText(R.id.todo_description1, descriptions.get(0));
             views.setTextViewText(R.id.todo_description2, descriptions.get(1));
+        } else {
+            views.setTextViewText(R.id.todo_description2, "");
         }
 
         Bundle extras = new Bundle();
@@ -136,6 +164,9 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     List<String> getDescriptions(int position) {
         Todo todo = todolist.get(position);
+
+        Log.i("todo", String.valueOf(position));
+        Log.i("todo", todo.toString());
 
         List<String> descriptions = new ArrayList<>();
         String time = constructTime(todo);
@@ -158,27 +189,44 @@ class TodoViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         Calendar calendar = Calendar.getInstance();
         int nowSec = (int) (calendar.getTimeInMillis() / 1000);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd h:mm a");
-        if (todo.startAt != 0 && nowSec < todo.startAt) {
-            calendar.setTimeInMillis((long)todo.startAt * 1000);
-            sb.append("Start at: ").append(format.format(calendar.getTime()));
-        } else if (todo.deadline != 0 && nowSec < todo.deadline) {
-            calendar.setTimeInMillis((long)todo.deadline * 1000);
-            sb.append("Deadline: ").append(format.format(calendar.getTime()));
+        if (todo.deadline != 0) {
+            if (nowSec < todo.deadline) {
+                calendar.setTimeInMillis((long)todo.deadline * 1000);
+                sb.append("Deadline: ").append(format.format(calendar.getTime()));
+            } else {
+                sb.append("Deadline has been exceeded! You must complete this todo!");
+            }
+        } else if (todo.startAt != 0) {
+            if (nowSec < todo.startAt) {
+                calendar.setTimeInMillis((long)todo.startAt * 1000);
+                sb.append("Start at: ").append(format.format(calendar.getTime()));
+            } else {
+                sb.append("Started!! Care about your time!");
+            }
         }
+
         return sb.toString();
     }
 
     String constructContentsText(Todo todo) {
         StringBuilder sb = new StringBuilder();
         int cl = todo.contents.size();
-        if (cl > 1) {
-            int complete = 0;
-            for (Content c : todo.contents) {
-                if (c.status == 1) complete++;
+        List<Content> unComplete = new ArrayList<>();
+        for (Content c : todo.contents) {
+            if (c.status != 1) unComplete.add(c);
+        }
+        if (unComplete.size() > 1) {
+
+            sb.append("Contents(")
+              .append(cl - unComplete.size())
+              .append(" / ")
+              .append(cl).append("): ");
+            for (int i = 0; i < unComplete.size(); i++) {
+                sb.append(unComplete.get(i).content);
+                if (i != unComplete.size() - 1) sb.append(", ");
             }
-            sb.append("Contents: ").append(complete).append(" / ").append(cl);
-        } else if (cl == 1) {
-            sb.append("Content: ").append(todo.contents.get(0).content);
+        } else if (unComplete.size() == 1) {
+            sb.append("Content: ").append(unComplete.get(0).content);
         }
         return sb.toString();
     }

@@ -25,5 +25,10 @@ public class Todo {
     public String createdAt;
     @SerializedName("updated_at")
     public String updatedAt;
+
+    @Override
+    public String toString() {
+        return "title: " + title + ", contents: " + contents.toString();
+    }
 }
 

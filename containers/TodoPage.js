@@ -182,6 +182,7 @@ class TodoPage extends Page {
         <TextInput
           selectionColor={Colors.accent100}
           // underlineColorAndroid={Colors.accent400}
+          selectTextOnFocus
           autoFocus
           defaultValue={this.temp.title}
           maxLength={30}
